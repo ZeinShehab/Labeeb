@@ -10,12 +10,12 @@ import cv2 as cv
 import mediapipe as mp
 
 NUM_CLASSES = 32
-images_dir = "D:/new-archive/datasets/valid/images"
+images_dir = "D:/new-archive/datasets/train/images"
 
 
 def main():
-    use_static_image_mode = 'store_true'
-    min_detection_confidence = 0.7
+    use_static_image_mode = True
+    min_detection_confidence = 0.5
     min_tracking_confidence = 0.5
 
     # Model load #############################################################
@@ -122,7 +122,7 @@ def pre_process_landmark(landmark_list):
 
 def logging_csv(number, landmark_list):
     if 0 <= number <= NUM_CLASSES:
-        csv_path = 'data/test.csv'
+        csv_path = 'data/train.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([number, *landmark_list])

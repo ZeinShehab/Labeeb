@@ -1,3 +1,10 @@
+########################
+
+# This script must run on the same drive as the data
+
+# Images are named as follows {class_ID}_{image_number}
+
+########################
 import os
 
 data_dir = "D:/new-archive/datasets/train"
