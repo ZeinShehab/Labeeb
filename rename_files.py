@@ -7,7 +7,7 @@
 ########################
 import os
 
-data_dir = "D:/new-archive/datasets/train"
+data_dir = "G:/content/drive/MyDrive/augmented/train"
 images_dir = f"{data_dir}/images"
 labels_dir = f"{data_dir}/labels"
 
@@ -30,8 +30,8 @@ for image in images:
         image_index = int(open(os.path.join(labels_dir, label_name), "r").read().split(' ')[0])
 
         # Special for dataset that mislabeled the 24th symbol as 0        
-        # if (image_index == 0 and image_count[image_index] == 464):
-        #     image_index = 24
+        if (image_index == 0 and image_count[image_index] == 464):
+            image_index = 24
         
         image_count[image_index] += 1
 
