@@ -10,8 +10,9 @@ import cv2 as cv
 import mediapipe as mp
 
 NUM_CLASSES = 32
-images_dir = "D:/new-archive/datasets/train/images"
 
+images_dir = "D:/new-archive/datasets/valid/images"
+data_save_path = "data/test.csv"
 
 def main():
     use_static_image_mode = True
@@ -62,12 +63,24 @@ def main():
                 # Landmark calculation
                 landmark_list = calc_landmark_list(debug_image, hand_landmarks)
 
+                landmark_list = list(itertools.chain.from_iterable(landmark_list))
                 # Conversion to relative coordinates / normalized coordinates
-                pre_processed_landmark_list = pre_process_landmark(
-                    landmark_list)
+                # pre_processed_landmark_list = pre_process_landmark(
+                    # landmark_list)
                 
+                max_value = max(list(map(abs, landmark_list)))
+
+                def normalize_(n):
+                    return n / max_value
+
+                landmark_list = list(map(normalize_, landmark_list))
+
+                # print(landmark_list)
+
+                # print(pre_processed_landmark_list)
                 # Write to the dataset file
-                logging_csv(number, pre_processed_landmark_list)
+                # logging_csv(number, pre_processed_landmark_list)
+                logging_csv(number, landmark_list)
 
                 index += 1
                 print(f"[+] Processed image {image_name}")
@@ -84,11 +97,13 @@ def calc_landmark_list(image, landmarks):
 
     # Keypoint
     for _, landmark in enumerate(landmarks.landmark):
-        landmark_x = min(int(landmark.x * image_width), image_width - 1)
-        landmark_y = min(int(landmark.y * image_height), image_height - 1)
-        # landmark_z = landmark.z
+        # landmark_x = min(int(landmark.x * image_width), image_width - 1)
+        # landmark_y = min(int(landmark.y * image_height), image_height - 1)
+        landmark_x = float(landmark.x)
+        landmark_y = float(landmark.y)
+        landmark_z = float(landmark.z)
 
-        landmark_point.append([landmark_x, landmark_y])
+        landmark_point.append([landmark_x, landmark_y, landmark_z])
 
     return landmark_point
 
@@ -122,7 +137,8 @@ def pre_process_landmark(landmark_list):
 
 def logging_csv(number, landmark_list):
     if 0 <= number <= NUM_CLASSES:
-        csv_path = 'data/train.csv'
+        csv_path = data_save_path
+        # csv_path = 'data/train.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([number, *landmark_list])
