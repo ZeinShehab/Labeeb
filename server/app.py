@@ -9,14 +9,27 @@ import mediapipe as mp
 from flask_restful import reqparse
 import itertools
 app = Flask(__name__)
+import xgboost as xgb
+from xgboost import XGBClassifier
+import pickle
+
+
+xgb_save_path = "../model/keypoint_classifier.pkl"
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = joblib.load("model.pkl")
+    model = pickle.load(open(xgb_save_path, "rb"))
+    # model = joblib.load("../model/keypoint_classifier.pkl")
     if model:
         try:
             file = request.files['image']
-            image = cv.imread(file)
+            filestr = file.read()
+            #convert string data to numpy array
+            file_bytes = np.fromstring(filestr, np.uint8)
+            # convert numpy array to image
+            image = cv.imdecode(file_bytes, cv.IMREAD_UNCHANGED)
+            # print(type(file))
+            # image = cv.imread(file)
             image = cv.flip(image, 1)  # Mirror display
             debug_image = copy.deepcopy(image)
             # Detection implementation #############################################################
@@ -46,7 +59,8 @@ def predict():
                     def normalize_(n):
                         return n / max_value
 
-                    pred_landmarks = list(map(normalize_, pred_landmarks))
+                    pred_landmarks = np.array(list(map(normalize_, pred_landmarks)))
+                    pred_landmarks = pred_landmarks.reshape(1, -1)
                     pred = model.predict(pred_landmarks)
 
 
