@@ -1,0 +1,1 @@
+Contains helper file for dealing with FPS in OpenCV.

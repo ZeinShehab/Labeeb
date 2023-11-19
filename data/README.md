@@ -1,0 +1,1 @@
+Contains hand keypoint data files and labels for letters.

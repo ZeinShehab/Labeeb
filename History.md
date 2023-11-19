@@ -6,4 +6,6 @@
 
 - We tried converting the RGB images into binary colored images (Skin: Black, Background: White). Conversion process was extremely inaccurate with the available datasets.
 
-- W
+- We trained the neural network on a dataset of binary images and it gave very high accuracy
+
+- We added the Z coordinate to the keypoint classifier and it improved accuracy to 87%
