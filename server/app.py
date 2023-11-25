@@ -18,8 +18,10 @@ xgb_save_path = "../model/keypoint_classifier.pkl"
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = pickle.load(open(xgb_save_path, "rb"))
+    # model = pickle.load(open(xgb_save_path, "rb"))
     # model = joblib.load("../model/keypoint_classifier.pkl")
+    model = XGBClassifier()
+    model.load_model(xgb_save_path)
     if model:
         try:
             file = request.files['image']
@@ -31,6 +33,9 @@ def predict():
             # print(type(file))
             # image = cv.imread(file)
             image = cv.flip(image, 1)  # Mirror display
+            image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
+            # cv.imshow("App Image", image)
+            # cv.waitKey(0)
             debug_image = copy.deepcopy(image)
             # Detection implementation #############################################################
             image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -65,6 +70,8 @@ def predict():
 
 
                 return jsonify({'prediction': str(pred)})
+            else:
+                return jsonify({'prediction': str(-1)})
         except:        
             return jsonify({'trace': traceback.format_exc()})
     else:

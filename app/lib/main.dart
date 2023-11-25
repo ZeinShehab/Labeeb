@@ -3,11 +3,12 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final cameras = await availableCameras();
-  final firstCamera = cameras.elementAt(0);
+  final firstCamera = cameras.elementAt(1);
 
   runApp(
     MaterialApp(
@@ -40,7 +41,24 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
     while (isCapturing) {
       print('Running...');
-      final frame = _controller.takePicture();
+      // final frame = _controller.takePicture();
+      // await Future.delayed(Duration(seconds: 1));
+      XFile picture = await _controller.takePicture();
+
+  // Create a `http.MultipartRequest`
+      var request = http.MultipartRequest('POST', Uri.parse('http://192.168.1.103:5000/predict'));
+
+      // Attach the image file to the request
+      request.files.add(await http.MultipartFile.fromPath('image', picture.path));
+
+      // Send the request
+      var response = await request.send();
+
+      // Read the response
+      String responseBody = await response.stream.bytesToString();
+
+      // Display the response
+      print(responseBody);
       await Future.delayed(Duration(seconds: 1));
     }
   }
