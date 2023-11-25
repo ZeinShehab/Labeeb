@@ -5,10 +5,15 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:flutter/services.dart' show rootBundle;
+
+import 'sentence_generator.dart'
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final cameras = await availableCameras();
   final firstCamera = cameras.elementAt(1);
+
 
   runApp(
     MaterialApp(
@@ -34,8 +39,15 @@ class TakePictureScreen extends StatefulWidget {
 
 class TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
+  late Future<void> _initiaizeControllerFuture;
+
   bool isCapturing = false; // Flag to track if the camera is on or off
+  String charSequence = '';
+
+  String labelData = await rootBundle.loadString('assets/labels-arabic.txt');
+  String wordData = await rootBundle.loadString('assets/words-arabic.txt');
+  List<Char> labels = labelData.split('\n');
+  List<Char> words = wordData.split('\n');
 
   Future<void> captureFrames() async {
 
@@ -56,9 +68,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       // Read the response
       String responseBody = await response.stream.bytesToString();
+      Map<String, int> jsonData = jsonDecode(responseBody);
+      int prediction = jsonData['prediction'];
 
+      setState(() {
+        charSequence = labels[prediction] + charSequence;
+      });
+
+      String bestSentence = generateBestSentence(charSequence, words);
       // Display the response
-      print(responseBody);
+      print(prediction);
+      print(bestSentence)
       await Future.delayed(Duration(seconds: 1));
     }
   }
