@@ -13,7 +13,7 @@ String joinSpecialChar(List<String> sentence) {
 
   while (i < n) {
     String word = sentence[i];
-    if (sentence[i] == 'ال'  &&i < n-1) {
+    if (word == 'ال'  &&i < n-1) {
       word += sentence[i+1];
       i+=1;
     }
