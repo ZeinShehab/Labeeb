@@ -1,13 +1,31 @@
 class SentenceResult {
-  final String sentence;
+  final List<String> sentence;
   final int numUnmatchedChars;
   final int numWords;
 
   SentenceResult(this.sentence, this.numUnmatchedChars, this.numWords);
 }
 
+String joinSpecialChar(List<String> sentence) {
+  List<String> result = [];
+  int n = sentence.length;
+  int i = 0;
+
+  while (i < n) {
+    String word = sentence[i];
+    if (sentence[i] == 'ال'  &&i < n-1) {
+      word += sentence[i+1];
+      i+=1;
+    }
+    i += 1;
+    word += ' ';
+    result.add(word);
+  }
+  return result;
+}
+
 List<SentenceResult> generateSentenceHelper(
-    String sequence, List<String> wordList, List<String> currentSentence, int unmatchedCharsCount) {
+    String sequence, List<String> wordList) {
     List<SentenceResult> result = [];
     List<List<dynamic>> stack = [
     [sequence, [], 0]
@@ -22,7 +40,9 @@ List<SentenceResult> generateSentenceHelper(
     if (currentSequence.isEmpty) {
       int numUnmatchedChars = currentUnmatchedCharsCount + currentSequence.length;
       int numWords = currentSentence.length;
-      result.add(SentenceResult(currentSentence.join(" "), numUnmatchedChars, numWords));
+      List<String> joinedSentence = joinSpecialChar(currentSentence);
+      
+      result.add(SentenceResult(joinedSentence, numUnmatchedChars, numWords));
       continue;
     }
 
@@ -36,9 +56,12 @@ List<SentenceResult> generateSentenceHelper(
     // Handle the case where the remaining sequence doesn't match any word
     if (wordList.every((word) => !currentSequence.startsWith(word))) {
       currentSentence.add(currentSequence);
+
       int numUnmatchedChars = currentUnmatchedCharsCount + currentSequence.length;
       int numWords = currentSentence.length;
-      result.add(SentenceResult(currentSentence.join(" "), numUnmatchedChars, numWords));
+      List<String> joinedSentence = joinSpecialChar(currentSentence);
+
+      result.add(SentenceResult(joinedSentence, numUnmatchedChars, numWords));
     }
   }
 
@@ -56,5 +79,5 @@ String generateBestSentence(String partialSequence, List<String> wordList) {
           ? a
           : b);
 
-  return bestSentence.sentence;
+  return bestSentence.sentence.reversed.join(' ');
 }
