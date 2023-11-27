@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -7,19 +9,25 @@ import 'package:http/http.dart' as http;
 
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'sentence_generator.dart'
+import 'sentence_generator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final cameras = await availableCameras();
   final firstCamera = cameras.elementAt(1);
 
+  final labelData = await rootBundle.loadString('assets/labels-arabic.txt');
+  final wordData =  await rootBundle.loadString('assets/words-arabic.txt');
+  final labels = LineSplitter.split(labelData).toList();
+  final words = LineSplitter.split(wordData).toList();
 
   runApp(
     MaterialApp(
       theme: ThemeData.dark(),
       home: TakePictureScreen(
         camera: firstCamera,
+        labels: labels,
+        words: words
       ),
     ),
   );
@@ -29,25 +37,32 @@ class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
     Key? key,
     required this.camera,
+    required this.labels,
+    required this.words
   }) : super(key: key);
 
   final CameraDescription camera;
+  final List<String> labels;
+  final List<String> words;
 
   @override
   TakePictureScreenState createState() => TakePictureScreenState();
 }
 
-class TakePictureScreenState extends State<TakePictureScreen> {
+class TakePictureScreenState extends State<TakePictureScreen>{
   late CameraController _controller;
-  late Future<void> _initiaizeControllerFuture;
-
+  late Future<void> _initializeControllerFuture;
+  late List<String> labels;
+  late List<String> words;
   bool isCapturing = false; // Flag to track if the camera is on or off
-  String charSequence = '';
-
-  String labelData = await rootBundle.loadString('assets/labels-arabic.txt');
-  String wordData = await rootBundle.loadString('assets/words-arabic.txt');
-  List<Char> labels = labelData.split('\n');
-  List<Char> words = wordData.split('\n');
+  List<String> charSequence  = [];
+  String bestSentence = ""; 
+  void clearText() {
+    setState(() {
+      bestSentence = "";
+      charSequence.clear();
+    });
+  }
 
   Future<void> captureFrames() async {
 
@@ -58,7 +73,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       XFile picture = await _controller.takePicture();
 
   // Create a `http.MultipartRequest`
-      var request = http.MultipartRequest('POST', Uri.parse('http://192.168.1.103:5000/predict'));
+      var request = http.MultipartRequest('POST', Uri.parse('http://192.168.1.105:5000/predict'));
 
       // Attach the image file to the request
       request.files.add(await http.MultipartFile.fromPath('image', picture.path));
@@ -68,17 +83,26 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       // Read the response
       String responseBody = await response.stream.bytesToString();
-      Map<String, int> jsonData = jsonDecode(responseBody);
+      final jsonData = jsonDecode(responseBody);
       int prediction = jsonData['prediction'];
 
+
+      if(prediction == -1){
+        continue;
+      }
       setState(() {
-        charSequence = labels[prediction] + charSequence;
+        charSequence.add(labels[prediction]);
+        // charSequence.insert(0, labels[prediction]);
       });
 
-      String bestSentence = generateBestSentence(charSequence, words);
+      setState(() {
+        bestSentence = generateBestSentence(charSequence.join(""), words);
+      });
+      
       // Display the response
-      print(prediction);
-      print(bestSentence)
+      print("prediction: $prediction" );
+      print("Sequence : $charSequence");
+      print("best sentence : $bestSentence");
       await Future.delayed(Duration(seconds: 1));
     }
   }
@@ -105,6 +129,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ResolutionPreset.medium,
     );
     _initializeControllerFuture = _controller.initialize();
+    labels = widget.labels;
+    words = widget.words;
   }
 
   @override
@@ -113,41 +139,74 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     super.dispose();
   }
 
-  @override
+  // ... (previous code remains unchanged)
+
+// ... (previous code remains unchanged)
+
+@override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a picture')),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_controller);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      appBar: AppBar(title: const Text('Translate')),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FloatingActionButton(
-            onPressed: () {
-              if (!isCapturing) {
-                startCapture();
-              }
-            },
-            child: Icon(Icons.camera_alt),
+          Expanded(
+            child: FutureBuilder<void>(
+              future: _initializeControllerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return CameraPreview(_controller);
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
           ),
-          FloatingActionButton(
-            onPressed: () {
-              // Add functionality for the second button
-              // This is just a placeholder, you can replace it with your own logic
-              stopCapture();
-            },
-            child: Icon(Icons.stop),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    bestSentence,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: clearText,
+                    child: Text('Clear'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              FloatingActionButton(
+                onPressed: () {
+                  if (!isCapturing) {
+                    startCapture();
+                  }
+                },
+                child: Icon(Icons.camera_alt),
+              ),
+              FloatingActionButton(
+                onPressed: () {
+                  // Add functionality for the second button
+                  // This is just a placeholder, you can replace it with your own logic
+                  stopCapture();
+                },
+                child: Icon(Icons.stop),
+              ),
+            ],
           ),
         ],
       ),
     );
-  }
+}
+
+
 }

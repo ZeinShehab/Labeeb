@@ -6,7 +6,7 @@ class SentenceResult {
   SentenceResult(this.sentence, this.numUnmatchedChars, this.numWords);
 }
 
-String joinSpecialChar(List<String> sentence) {
+List<String> joinSpecialChar(List<String> sentence) {
   List<String> result = [];
   int n = sentence.length;
   int i = 0;
@@ -79,5 +79,5 @@ String generateBestSentence(String partialSequence, List<String> wordList) {
           ? a
           : b);
 
-  return bestSentence.sentence.reversed.join(' ');
+  return bestSentence.sentence.join(' ');
 }

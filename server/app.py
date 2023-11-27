@@ -68,12 +68,12 @@ def predict():
                     pred_landmarks = pred_landmarks.reshape(1, -1)
                     pred = model.predict(pred_landmarks)
 
-
-                return jsonify({'prediction': str(pred)})
+                    print(pred[0])
+                return jsonify({'prediction': int(pred[0])})
             else:
-                return jsonify({'prediction': str(-1)})
+                return jsonify({'prediction': -1})
         except:        
-            return jsonify({'trace': traceback.format_exc()})
+            return jsonify({'trace': traceback.format_exc(), 'prediction':-1})
     else:
         return ('No model here to use')
     
