@@ -11,6 +11,7 @@ use_static_image_mode = True
 min_detection_confidence = 0.5
 min_tracking_confidence = 0.5
 images_dir = 'D:\hand_images'
+csv_path = '../data/word_keypoints.csv'
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
@@ -20,7 +21,6 @@ hands = mp_hands.Hands(
     min_tracking_confidence=min_tracking_confidence,
 )
 
-csv_path = 'hand_keypoints.csv'
 
 def logging_csv(number, landmark_list):
     with open(csv_path, 'a', newline="") as f:
@@ -72,18 +72,17 @@ def main():
     idx = 0         
     number = 33                         # Number of word in labels
 
-    iterations = 10                     # Entries per Word
+    iterations = 420                     # Entries per Word
     print("Prepare to start capture")
     time.sleep(2)
     while True and idx < iterations:
-        time.sleep(0.25)
+        time.sleep(0.15)
         key = cv.waitKey(10)
 
         if key == 27:
             break
 
         _, image = cap.read()
-        debug_image = copy.deepcopy(image)
 
         image = cv.flip(image, 1)
         debug_image = copy.deepcopy(image)

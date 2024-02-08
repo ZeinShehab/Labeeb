@@ -12,6 +12,8 @@ app = Flask(__name__)
 import xgboost as xgb
 from xgboost import XGBClassifier
 import pickle
+import sys
+sys.path.append('D:/LSL_Translator/LSL_Translator')
 from helpers.generate_keypoints import calc_landmark_list
 
 xgb_save_path = "../model/keypoint_classifier.pkl"
