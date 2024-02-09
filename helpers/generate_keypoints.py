@@ -62,24 +62,7 @@ def main():
             for hand_landmarks in results.multi_hand_landmarks:
                 # Landmark calculation
                 landmark_list = calc_landmark_list(debug_image, hand_landmarks)
-
-                landmark_list = list(itertools.chain.from_iterable(landmark_list))
-                # Conversion to relative coordinates / normalized coordinates
-                # pre_processed_landmark_list = pre_process_landmark(
-                    # landmark_list)
-                
-                max_value = max(list(map(abs, landmark_list)))
-
-                def normalize_(n):
-                    return n / max_value
-
-                landmark_list = list(map(normalize_, landmark_list))
-
-                # print(landmark_list)
-
-                # print(pre_processed_landmark_list)
                 # Write to the dataset file
-                # logging_csv(number, pre_processed_landmark_list)
                 logging_csv(number, landmark_list)
 
                 index += 1
@@ -93,7 +76,7 @@ def main():
 def calc_landmark_list(image, landmarks):
     image_width, image_height = image.shape[1], image.shape[0]
 
-    landmark_point = []
+    landmark_points = []
 
     # Keypoint
     for _, landmark in enumerate(landmarks.landmark):
@@ -103,9 +86,17 @@ def calc_landmark_list(image, landmarks):
         landmark_y = float(landmark.y)
         landmark_z = float(landmark.z)
 
-        landmark_point.append([landmark_x, landmark_y, landmark_z])
+        landmark_points.append([landmark_x, landmark_y, landmark_z])
+        landmark_points = list(itertools.chain.from_iterable(landmark_points))
+                
+        max_value = max(list(map(abs, landmark_points)))
 
-    return landmark_point
+        def normalize_(n):
+            return n / max_value
+
+        landmark_points = list(map(normalize_, landmark_points))
+
+    return landmark_points
 
 
 def pre_process_landmark(landmark_list):

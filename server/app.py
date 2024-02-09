@@ -12,7 +12,9 @@ app = Flask(__name__)
 import xgboost as xgb
 from xgboost import XGBClassifier
 import pickle
-
+import sys
+sys.path.append('D:/LSL_Translator/LSL_Translator')
+from helpers.generate_keypoints import calc_landmark_list
 
 xgb_save_path = "../model/keypoint_classifier.pkl"
 
@@ -57,14 +59,8 @@ def predict():
                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                     results.multi_handedness):
                     # Landmark calculation
-                    pred_landmarks = calc_pred_landmarks(debug_image, hand_landmarks)
-                    pred_landmarks = list(itertools.chain.from_iterable(pred_landmarks))
-                    max_value = max(list(map(abs, pred_landmarks)))
-
-                    def normalize_(n):
-                        return n / max_value
-
-                    pred_landmarks = np.array(list(map(normalize_, pred_landmarks)))
+                    pred_landmarks = calc_landmark_list(debug_image, hand_landmarks)
+                    pred_landmarks = np.array(pred_landmarks)
                     pred_landmarks = pred_landmarks.reshape(1, -1)
                     pred = model.predict(pred_landmarks)
 
