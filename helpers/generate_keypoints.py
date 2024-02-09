@@ -11,8 +11,9 @@ import mediapipe as mp
 
 NUM_CLASSES = 32
 
-images_dir = "D:/new-archive/datasets/valid/images"
-data_save_path = "data/test.csv"
+images_dir = "D:/capstone-datasets/new-archive/datasets/valid/images"
+data_save_path = "../data/alphabet_test.csv"
+
 
 def main():
     use_static_image_mode = True
@@ -38,7 +39,6 @@ def main():
 
         image_name = images[index]
         number = int(image_name.split('_')[0])
-
 
         image = cv.imread(f"{images_dir}/{image_name}")
         # image = cv.flip(image, 1)  # Mirror display
@@ -77,53 +77,32 @@ def calc_landmark_list(image, landmarks):
     image_width, image_height = image.shape[1], image.shape[0]
 
     landmark_points = []
+    base_x, base_y, base_z = 0, 0, 0
 
     # Keypoint
-    for _, landmark in enumerate(landmarks.landmark):
-        # landmark_x = min(int(landmark.x * image_width), image_width - 1)
-        # landmark_y = min(int(landmark.y * image_height), image_height - 1)
-        landmark_x = float(landmark.x)
-        landmark_y = float(landmark.y)
+    for index, landmark in enumerate(landmarks.landmark):
+        landmark_x = float(min(float(landmark.x * image_width), image_width - 1))
+        landmark_y = float(min(float(landmark.y * image_height), image_height - 1))
         landmark_z = float(landmark.z)
 
-        landmark_points.append([landmark_x, landmark_y, landmark_z])
-        landmark_points = list(itertools.chain.from_iterable(landmark_points))
-                
-        max_value = max(list(map(abs, landmark_points)))
-
-        def normalize_(n):
-            return n / max_value
-
-        landmark_points = list(map(normalize_, landmark_points))
-
-    return landmark_points
-
-
-def pre_process_landmark(landmark_list):
-    temp_landmark_list = copy.deepcopy(landmark_list)
-
-    # Convert to relative coordinates
-    base_x, base_y = 0, 0
-    for index, landmark_point in enumerate(temp_landmark_list):
         if index == 0:
-            base_x, base_y = landmark_point[0], landmark_point[1]
+            base_x, base_y, base_z = landmark_x, landmark_y, landmark_z
+        
+        landmark_x = landmark_x - base_x
+        landmark_y = landmark_y - base_y
+        landmark_z = landmark_z - base_z
 
-        temp_landmark_list[index][0] = temp_landmark_list[index][0] - base_x
-        temp_landmark_list[index][1] = temp_landmark_list[index][1] - base_y
+        landmark_points.append([landmark_x, landmark_y, landmark_z])
 
-    # Convert to a one-dimensional list
-    temp_landmark_list = list(
-        itertools.chain.from_iterable(temp_landmark_list))
-
-    # Normalization
-    max_value = max(list(map(abs, temp_landmark_list)))
+    landmark_points = list(itertools.chain.from_iterable(landmark_points))
+            
+    max_value = max(list(map(abs, landmark_points)))
 
     def normalize_(n):
         return n / max_value
 
-    temp_landmark_list = list(map(normalize_, temp_landmark_list))
-
-    return temp_landmark_list
+    landmark_points = list(map(normalize_, landmark_points))
+    return landmark_points
 
 
 def logging_csv(number, landmark_list):
