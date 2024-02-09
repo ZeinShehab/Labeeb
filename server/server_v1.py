@@ -11,10 +11,15 @@ import itertools
 # import xgboost as xgb
 from xgboost import XGBClassifier
 import pickle
+import sys
+sys.path.append('C:/Users/zeins/LSL_Translator/')
+from helpers.generate_keypoints import calc_landmark_list
 
 app = Flask(__name__)
 
-xgb_save_path = "../model/keypoint_classifier.pkl"
+# xgb_save_path = "../model/keypoint_classifier.pkl"
+# xgb_save_path = "../model/old_model.pkl"
+xgb_save_path = "../model/alphabet_classifier.pkl"
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -33,7 +38,7 @@ def predict():
             # print(type(file))
             # image = cv.imread(file)
             image = cv.flip(image, 1)  # Mirror display
-            image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
+            # image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
             # cv.imshow("App Image", image)
             # cv.waitKey(0)
             debug_image = copy.deepcopy(image)
@@ -57,15 +62,25 @@ def predict():
                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                     results.multi_handedness):
                     # Landmark calculation
-                    pred_landmarks = calc_pred_landmarks(debug_image, hand_landmarks)
-                    pred_landmarks = list(itertools.chain.from_iterable(pred_landmarks))
-                    max_value = max(list(map(abs, pred_landmarks)))
+                    pred_landmarks = calc_landmark_list(debug_image, hand_landmarks)
+                    
+                    # OLDDD WORKING
+                    
+                    # pred_landmarks = calc_pred_landmarks(debug_image, hand_landmarks)
+                    # pred_landmarks = list(itertools.chain.from_iterable(pred_landmarks))
+                    # max_value = max(list(map(abs, pred_landmarks)))
 
-                    def normalize_(n):
-                        return n / max_value
+                    # def normalize_(n):
+                    #     return n / max_value
 
-                    pred_landmarks = np.array(list(map(normalize_, pred_landmarks)))
+                    # pred_landmarks = np.array(list(map(normalize_, pred_landmarks)))
+                    
+                    ####################
+                    pred_landmarks = np.array(pred_landmarks) # NEW
+
                     pred_landmarks = pred_landmarks.reshape(1, -1)
+
+
                     pred = model.predict(pred_landmarks)
 
                     print(pred[0])
@@ -96,4 +111,4 @@ def calc_pred_landmarks(image, landmarks):
     return landmark_point
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
