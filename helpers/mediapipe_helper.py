@@ -41,7 +41,8 @@ class MediaPipe:
             if len(results.multi_hand_landmarks) == 1:
                 # 0=left 1=right
                 handedness = results.multi_handedness[0].classification[0].index
-                multi_hand_landmarks.insert(1-handedness, [0.0 for _ in range(63)])
+                # multi_hand_landmarks.insert(1-handedness, [0.0 for _ in range(63)])
+                multi_hand_landmarks.append([0.0 for _ in range(63)])
 
             multi_hand_landmarks = list(itertools.chain.from_iterable(multi_hand_landmarks))
             return multi_hand_landmarks
