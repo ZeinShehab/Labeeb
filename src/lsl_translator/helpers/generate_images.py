@@ -6,13 +6,13 @@ import itertools
 import mediapipe as mp
 import csv
 import time
-
+from generate_keypoints import calc_landmark_list
 use_static_image_mode = True
 min_detection_confidence = 0.5
 min_tracking_confidence = 0.5
-images_dir = 'D:\hand_images'
-csv_path = '../data/word_keypoints.csv'
-
+images_dir = '/Users/raedfidawi/LSL_Word_Images'
+csv_path_train = '../data/word_keypoints_train.csv'
+csv_path_test  = '../data/word_keypoints_test.csv'
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=use_static_image_mode,
@@ -22,22 +22,10 @@ hands = mp_hands.Hands(
 )
 
 
-def logging_csv(number, landmark_list):
+def logging_csv(number, landmark_list, csv_path):
     with open(csv_path, 'a', newline="") as f:
         writer = csv.writer(f)
         writer.writerow([number, *landmark_list])
-
-def calc_landmark_list(image, landmarks):
-    landmark_points = []
-
-    for _, landmark in enumerate(landmarks.landmark):
-        landmark_x = float(landmark.x)
-        landmark_y = float(landmark.y)
-        landmark_z = float(landmark.z)
-
-        landmark_points.extend([landmark_x, landmark_y, landmark_z])
-
-    return landmark_points
 
 def save_image(image, image_number, image_idx):
     image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.png')
@@ -61,7 +49,7 @@ def main():
 
     args = get_args()
 
-    cap_device = 0
+    cap_device = 1
     cap_width = args.width
     cap_height = args.height
 
@@ -69,8 +57,10 @@ def main():
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
+    time.sleep(0.5)
+
     idx = 0         
-    number = 33                         # Number of word in labels
+    number = 35                          # Number of word in labels
 
     iterations = 420                     # Entries per Word
     print("Prepare to start capture")
@@ -94,8 +84,11 @@ def main():
         if results.multi_hand_landmarks is not None:
             for hand_landmarks in results.multi_hand_landmarks:
                 landmark_list = calc_landmark_list(debug_image, hand_landmarks)
-                logging_csv(number, landmark_list)
-                
+                if idx <= 300:
+                    logging_csv(number, landmark_list,csv_path_train)
+                else:
+                    logging_csv(number, landmark_list,csv_path_test)
+
             save_image(image, number, idx)
             idx += 1
         cv.imshow('Hand Gesture Recognition', debug_image)
