@@ -2,16 +2,14 @@ from flask import Flask, jsonify, request
 import numpy as np
 import traceback
 import cv2 as cv
-from xgboost import XGBClassifier
 from lsl_translator.helpers import MediaPipe
+from lsl_translator.model import KeypointClassifier
 
 app = Flask(__name__)
-xgb_save_path = "../../../model/keypoint_classifier.pkl"
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = XGBClassifier()
-    model.load_model(xgb_save_path)
+    model = KeypointClassifier()
     mp = MediaPipe()
 
     if model:

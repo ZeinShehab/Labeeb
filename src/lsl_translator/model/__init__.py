@@ -1,0 +1,1 @@
+from lsl_translator.model.keypoint_classifier import KeypointClassifier
