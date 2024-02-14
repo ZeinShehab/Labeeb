@@ -3,12 +3,12 @@
 import csv
 import os
 import cv2 as cv
-from mediapipe_helper import MediaPipe
+from lsl_translator.helpers import MediaPipe
 
 NUM_CLASSES = 32
 
 images_dir = "D:/capstone-datasets/new-archive/datasets/valid/images"
-data_save_path = "data/multi_hand_alph_test.csv"
+data_save_path = "../../data/multi_hand_alph_test.csv"
 mp = MediaPipe()
 
 def main():
