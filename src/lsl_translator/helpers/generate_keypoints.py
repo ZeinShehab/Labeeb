@@ -5,10 +5,11 @@ import os
 import cv2 as cv
 from lsl_translator.helpers import MediaPipe
 
-NUM_CLASSES = 32
+NUM_CLASSES = 37
 
-images_dir = "D:/capstone-datasets/new-archive/datasets/valid/images"
-data_save_path = "../../data/multi_hand_alph_test.csv"
+# images_dir = "D:/capstone-datasets/new-archive/datasets/valid/images"
+images_dir = "D:/capstone-datasets/LSL_Word_Images_v2/datasets/test"
+data_save_path = "data/multi_hand_word_test.csv"
 mp = MediaPipe()
 
 def main():

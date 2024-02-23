@@ -1,1 +1,1 @@
-python3 -m pip install --editable .
+python -m pip install --editable .
