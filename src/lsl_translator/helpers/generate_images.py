@@ -6,21 +6,15 @@ import itertools
 import mediapipe as mp
 import csv
 import time
-from generate_keypoints import calc_landmark_list
-use_static_image_mode = True
-min_detection_confidence = 0.5
-min_tracking_confidence = 0.5
-images_dir = '/Users/raedfidawi/LSL_Word_Images'
-csv_path_train = '../data/word_keypoints_train.csv'
-csv_path_test  = '../data/word_keypoints_test.csv'
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(
-    static_image_mode=use_static_image_mode,
-    max_num_hands=2,
-    min_detection_confidence=min_detection_confidence,
-    min_tracking_confidence=min_tracking_confidence,
-)
+import imutils
+import numpy as np
+from lsl_translator.helpers.mediapipe_helper import MediaPipe
 
+images_dir = '/Users/raedfidawi/LSL_Word_Images_v2'
+csv_path_train = 'data/multi_hand_word_train.csv'
+csv_path_test  = 'data/multi_hand_word_test.csv'
+
+mp = MediaPipe()
 
 def logging_csv(number, landmark_list, csv_path):
     with open(csv_path, 'a', newline="") as f:
@@ -28,8 +22,22 @@ def logging_csv(number, landmark_list, csv_path):
         writer.writerow([number, *landmark_list])
 
 def save_image(image, image_number, image_idx):
-    image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.png')
-    cv.imwrite(image_filename, image)
+    image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.jpg')
+    
+    resized_image = imutils.resize(image, width=400, height=400)
+    
+    canvas = np.ones((400, 400, 3), dtype=np.uint8) * 255
+    
+    # recenter image
+    y_offset = (400 - resized_image.shape[0]) // 2
+    x_offset = (400 - resized_image.shape[1]) // 2
+    
+    # add white border
+    canvas[y_offset:y_offset + resized_image.shape[0], x_offset:x_offset + resized_image.shape[1]] = resized_image
+    
+    compression_params = [cv.IMWRITE_JPEG_QUALITY, 80]
+    cv.imwrite(image_filename, canvas, compression_params)
+    
     print(f"[+] Saved image: {image_number}_{image_idx}")
 
 def get_args():
@@ -43,10 +51,6 @@ def get_args():
     return args
 
 def main():
-    global use_static_image_mode
-    global min_detection_confidence
-    global min_tracking_confidence
-
     args = get_args()
 
     cap_device = 1
@@ -59,10 +63,10 @@ def main():
 
     time.sleep(0.5)
 
-    idx = 0         
-    number = 35                          # Number of word in labels
+    idx = 420         
+    number = 32                          # Number of word in labels
 
-    iterations = 420                     # Entries per Word
+    iterations = 840                     # Entries per Word
     print("Prepare to start capture")
     time.sleep(2)
     while True and idx < iterations:
@@ -73,25 +77,19 @@ def main():
             break
 
         _, image = cap.read()
-
-        image = cv.flip(image, 1)
-        debug_image = copy.deepcopy(image)
-
-        image.flags.writeable = False
-        results = hands.process(image)
-        image.flags.writeable = True
-
-        if results.multi_hand_landmarks is not None:
-            for hand_landmarks in results.multi_hand_landmarks:
-                landmark_list = calc_landmark_list(debug_image, hand_landmarks)
-                if idx <= 300:
-                    logging_csv(number, landmark_list,csv_path_train)
-                else:
-                    logging_csv(number, landmark_list,csv_path_test)
+        
+        landmark_list = mp.get_multi_hand_landmarks(image)
+    
+        if landmark_list is not None:
+            if idx <= 720:
+                logging_csv(number, landmark_list,csv_path_train)
+            else:
+                logging_csv(number, landmark_list,csv_path_test)
 
             save_image(image, number, idx)
             idx += 1
-        cv.imshow('Hand Gesture Recognition', debug_image)
+
+        cv.imshow('Hand Gesture Recognition', image)
 
     cap.release()
     cv.destroyAllWindows()
