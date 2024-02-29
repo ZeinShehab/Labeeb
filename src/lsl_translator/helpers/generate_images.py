@@ -10,7 +10,7 @@ import imutils
 import numpy as np
 from lsl_translator.helpers.mediapipe_helper import MediaPipe
 
-images_dir = '/Users/raedfidawi/LSL_Word_Images_v2'
+images_dir = '/Users/raedfidawi/LSL_Word_Images_v2_Split/words_test'
 csv_path_train = 'data/multi_hand_word_train.csv'
 csv_path_test  = 'data/multi_hand_word_test.csv'
 
@@ -21,24 +21,45 @@ def logging_csv(number, landmark_list, csv_path):
         writer = csv.writer(f)
         writer.writerow([number, *landmark_list])
 
-def save_image(image, image_number, image_idx):
-    image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.jpg')
+# def save_image(image, image_number, image_idx):
+#     image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.jpg')
     
+#     resized_image = imutils.resize(image, width=400, height=400)
+    
+#     canvas = np.ones((400, 400, 3), dtype=np.uint8) * 255
+    
+#     # recenter image
+#     y_offset = (400 - resized_image.shape[0]) // 2
+#     x_offset = (400 - resized_image.shape[1]) // 2
+    
+#     # add white border
+#     canvas[y_offset:y_offset + resized_image.shape[0], x_offset:x_offset + resized_image.shape[1]] = resized_image
+    
+#     compression_params = [cv.IMWRITE_JPEG_QUALITY, 80]
+#     cv.imwrite(image_filename, canvas, compression_params)
+    
+#     print(f"[+] Saved image: {image_number}_{image_idx}")
+
+def resize_image(image):
     resized_image = imutils.resize(image, width=400, height=400)
     
     canvas = np.ones((400, 400, 3), dtype=np.uint8) * 255
     
-    # recenter image
     y_offset = (400 - resized_image.shape[0]) // 2
     x_offset = (400 - resized_image.shape[1]) // 2
     
-    # add white border
     canvas[y_offset:y_offset + resized_image.shape[0], x_offset:x_offset + resized_image.shape[1]] = resized_image
     
+    return canvas
+
+def save_image(resized_image, image_number, image_idx):
+    image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.jpg')
+    
     compression_params = [cv.IMWRITE_JPEG_QUALITY, 80]
-    cv.imwrite(image_filename, canvas, compression_params)
+    cv.imwrite(image_filename, resized_image, compression_params)
     
     print(f"[+] Saved image: {image_number}_{image_idx}")
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -63,8 +84,8 @@ def main():
 
     time.sleep(0.5)
 
-    idx = 420         
-    number = 32                          # Number of word in labels
+    idx =   720       
+    number = 37                          # Number of word in labels
 
     iterations = 840                     # Entries per Word
     print("Prepare to start capture")
@@ -77,15 +98,12 @@ def main():
             break
 
         _, image = cap.read()
-        
+        image = resize_image(image)
         landmark_list = mp.get_multi_hand_landmarks(image)
     
         if landmark_list is not None:
-            if idx <= 720:
-                logging_csv(number, landmark_list,csv_path_train)
-            else:
-                logging_csv(number, landmark_list,csv_path_test)
 
+            # logging_csv(number, landmark_list,csv_path_train)
             save_image(image, number, idx)
             idx += 1
 
