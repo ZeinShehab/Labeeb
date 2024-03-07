@@ -7,3 +7,13 @@
 - 502 words KArSL: https://hamzah-luqman.github.io/KArSL/
 
 - interesting project: https://pypi.org/project/sign-language-translator/
+
+- CNN architecture: https://www.mdpi.com/2073-431X/11/5/78
+
+- Binary Image: https://www.hindawi.com/journals/jece/2021/2995851/
+
+- Another way of classifying: https://thesai.org/Downloads/Volume6No11/Paper_27-Arabic_Alphabet_and_Numbers_Sign_Language_Recognition.pdf
+
+- Similar Project with similar functionality: https://github.com/Jo0xFF/Arabic-sign-language-classification
+
+- Look into later: https://www.mdpi.com/2073-431X/11/5/78

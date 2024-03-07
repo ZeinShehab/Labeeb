@@ -9,11 +9,11 @@ import time
 def capture_frame():
     args = get_args()
 
-    cap_device = 1
+    cap_device = 0
     cap_width = args.width
     cap_height = args.height
 
-    cap = cv2.VideoCapture(cap_device)
+    cap = cv2.VideoCapture(cap_device, cv2.CAP_DSHOW) # For Webcam
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cap_height)
     time.sleep(1)

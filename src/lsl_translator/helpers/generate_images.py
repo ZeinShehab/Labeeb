@@ -10,7 +10,9 @@ import imutils
 import numpy as np
 from lsl_translator.helpers.mediapipe_helper import MediaPipe
 
-images_dir = '/Users/raedfidawi/LSL_Word_Images_v2_Split/words_test'
+# images_dir = 'D:\Data\LSL_Word_Images_v2_Split/words_test'
+train_dir = 'D:\Data\LSL_Word_Images_v2_Split/words_train'
+test_dir = 'D:\Data\LSL_Word_Images_v2_Split/words_test'
 csv_path_train = 'data/multi_hand_word_train.csv'
 csv_path_test  = 'data/multi_hand_word_test.csv'
 
@@ -52,7 +54,7 @@ def resize_image(image):
     
     return canvas
 
-def save_image(resized_image, image_number, image_idx):
+def save_image(images_dir, resized_image, image_number, image_idx):
     image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.jpg')
     
     compression_params = [cv.IMWRITE_JPEG_QUALITY, 80]
@@ -71,27 +73,38 @@ def get_args():
 
     return args
 
+def multihanded(landmark_list):
+    second_half = [lm for lm in landmark_list[63:]]
+
+    if all([v == 0.0 for v in second_half]):
+        return 1
+    else: 
+        return 2
+
 def main():
     args = get_args()
+    
+    nb_of_hands = 1
 
-    cap_device = 1
+    cap_device = 0
     cap_width = args.width
     cap_height = args.height
 
-    cap = cv.VideoCapture(cap_device)
+    cap = cv.VideoCapture(cap_device, cv.CAP_DSHOW)
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
     time.sleep(0.5)
 
-    idx =   720       
-    number = 37                          # Number of word in labels
+    idx =   720      
+    number = 49                          # Number of word in labels
 
     iterations = 840                     # Entries per Word
     print("Prepare to start capture")
     time.sleep(2)
     while True and idx < iterations:
         time.sleep(0.15)
+        # time.sleep(0.75)
         key = cv.waitKey(10)
 
         if key == 27:
@@ -101,11 +114,11 @@ def main():
         image = resize_image(image)
         landmark_list = mp.get_multi_hand_landmarks(image)
     
-        if landmark_list is not None:
+        if landmark_list is not None and multihanded(landmark_list) == nb_of_hands:
 
-            # logging_csv(number, landmark_list,csv_path_train)
-            save_image(image, number, idx)
-            idx += 1
+                logging_csv(number, landmark_list,csv_path_test)
+                save_image(test_dir, image, number, idx)
+                idx += 1
 
         cv.imshow('Hand Gesture Recognition', image)
 
