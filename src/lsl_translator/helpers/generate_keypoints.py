@@ -7,13 +7,13 @@ from lsl_translator.helpers import MediaPipe
 
 NUM_CLASSES = 37
 
-# images_dir = "D:/capstone-datasets/new-archive/datasets/valid/images"
-images_dir = "D:/capstone-datasets/LSL_Word_Images_v2/datasets/test"
+images_dir = "/Users/raedfidawi/LSL_Word_Images_v2_Split/words_test"
 data_save_path = "data/multi_hand_word_test.csv"
 mp = MediaPipe()
 
 def main():
-    images = os.listdir(images_dir)
+    # images = os.listdir(images_dir)
+    images = sorted(os.listdir(images_dir), key=lambda x: (int(x.split('_')[0]), int(x.split('_')[1].split('.')[0])))
     index = 0
     max_iter = 3
     iterations = 0
