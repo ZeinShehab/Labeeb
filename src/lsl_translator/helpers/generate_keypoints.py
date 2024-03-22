@@ -5,7 +5,7 @@ import os
 import cv2 as cv
 from lsl_translator.helpers import MediaPipe
 
-NUM_CLASSES = 37
+NUM_CLASSES = 54
 
 images_dir = "/Users/raedfidawi/LSL_Word_Images_v2_Split/words_test"
 data_save_path = "data/multi_hand_word_test.csv"
