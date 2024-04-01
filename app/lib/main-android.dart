@@ -20,9 +20,9 @@ Future<void> main() async {
   final labelData = await rootBundle.loadString('assets/labels-arabic.txt');
   final wordData = await rootBundle.loadString('assets/words-arabic.txt');
   final combinationData =
-      await rootBundle.loadString('assets/combinations-arabic.txt');
+      await rootBundle.loadString('assets/combinations-arabic.json');
 
-  final combinations = await json.decode(combinationData);
+  final combinations = await (json.decode(combinationData)).cast<String,String>();
   final labels = LineSplitter.split(labelData).toList();
   final words = LineSplitter.split(wordData).toList();
 
@@ -141,6 +141,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     _initializeControllerFuture = _controller.initialize();
     labels = widget.labels;
     words = widget.words;
+    combinations = widget.combinations;
   }
 
   @override
