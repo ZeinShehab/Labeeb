@@ -12,7 +12,7 @@ NUM_CLASSES = 54
 print(os.getcwd())
 
 data_dir = 'D:/capstone-datasets/multi_hand_gestures/'
-gesture_save_path = '../../../data/multi_hand_gestures.csv'
+gesture_save_path = '../../../data/gestures_train.csv'
 
 mp = MediaPipe()
 
@@ -83,26 +83,21 @@ def main():
             continue
 
         # image = resize_image(image)
-        landmark_list = mp.get_multi_hand_landmarks(image)
 
-
-        if landmark_list is not None:
+        if mp.contains_landmarks(image):
             image_history.append(image)
             save_image(gesture_data_path, image, gesture_index, frame_idx)
             frame_idx += 1
             print(f"[*] INFO: Chnage Frame!!!")
             time.sleep(0.1)
 
-        cv.imshow('Hand Gesture Recognition', image)
+        cv.imshow('Hand Gesture Training', image)
 
     cap.release()
     cv.destroyAllWindows()
 
     landmark_list = mp.get_multi_hand_landmarks_gesture(image_history)
     logging_csv(gesture_index, landmark_list)
-
-    # landmark_history == list(itertools.chain.from_iterable(landmark_history))
-
 
 if __name__ == '__main__':
     main()
