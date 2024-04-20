@@ -36,3 +36,35 @@ prediction = loaded_model.predict(xs)
 p = loaded_model.predict_proba(xs)
 print(prediction)
 print(p)
+
+# xs1 = list(range(1, 10, 3))
+# xs2 = list(range(2, 10, 3))
+# xs3 = list(range(3, 10, 3))
+# print(xs1)
+# print(xs2)
+# print(xs3)
+
+# xs = [[0.0, 0.0] for x in range(5)]
+# print(xs) 
+# xs[0][0] = 1.0
+# print(xs)
+
+# import numpy as np
+
+# data_directory = "data/"
+# train_dataset = f'{data_directory}gesture_train.csv'
+# test_dataset = f'{data_directory}gesture_test.csv'
+# augmented_dataset = f'{data_directory}augmented_gestures_train.csv'
+
+# recorded_gesture = np.loadtxt(train_dataset, delimiter=',', dtype='float32', usecols=list(range(1, (126 * 10) + 1)))
+# augmented_gesture = np.loadtxt(augmented_dataset, delimiter=',', dtype='float32', usecols=list(range(1, (126 * 10) + 1)))
+
+# print(len(recorded_gesture[0]))
+# print(len(augmented_gesture[0]))
+
+# mapped_recorded = list(map(abs, recorded_gesture[0]))
+# mapped_augmented = list(map(abs, augmented_gesture[0]))
+
+# difference = np.subtract(mapped_augmented, mapped_recorded)
+# difference = list(map(abs, difference))
+# print(np.average(difference))

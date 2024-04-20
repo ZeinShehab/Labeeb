@@ -7,14 +7,14 @@ data_directory = "data/"
 train_dataset = f'{data_directory}gesture_train.csv'
 test_dataset = f'{data_directory}gesture_test.csv'
 # augment_save_path = f'{data_directory}augmented_gestures_train.csv'
-augment_save_path = f'{data_directory}augmented_gestures_test.csv'
+augment_save_path = f'{data_directory}augmented_gestures_train.csv'
 
 NUM_CLASSES = 2
 SEQUENCE_FRAMES = 10
 TRAIN_ENTRIES_PER_GESTURE = 10
 MULTI_HAND_LANDMARKS = 126
 MAX_COL = (MULTI_HAND_LANDMARKS * SEQUENCE_FRAMES) + 1
-AUGMENTED_ENTRIES_COUNT = 50
+AUGMENTED_ENTRIES_COUNT = 100
 
 x_values = np.loadtxt(train_dataset, delimiter=',', dtype='float32', usecols=list(range(1, MAX_COL, 3)))
 y_values = np.loadtxt(train_dataset, delimiter=',', dtype='float32', usecols=list(range(2, MAX_COL, 3)))
@@ -75,19 +75,19 @@ for gesture_index in range(NUM_CLASSES):
         # at this point we have the intervals for each keypoint
         eps = 0.001
         for augment_count in range(AUGMENTED_ENTRIES_COUNT):
-            # augmented_frame = [[random.uniform(x_intervals[i][0], x_intervals[i][1]),
-            #                     random.uniform(y_intervals[i][0], y_intervals[i][1]),
-            #                     random.uniform(z_intervals[i][0], z_intervals[i][1])] for i in range(len(x_intervals))]
+            augmented_frame = [[random.uniform(x_intervals[i][0], x_intervals[i][1]),
+                                random.uniform(y_intervals[i][0], y_intervals[i][1]),
+                                random.uniform(z_intervals[i][0], z_intervals[i][1])] for i in range(len(x_intervals))]
+            augmented_frame = list(itertools.chain.from_iterable(augmented_frame))
             
-            for i in range(42):
-                mid_x = (x_intervals[i][0] + x_intervals[i][1])/2
-                mid_y = (y_intervals[i][0] + y_intervals[i][1])/2
-                mid_z = (z_intervals[i][0] + z_intervals[i][1])/2
-                augmented_frame = [random.uniform(mid_x - eps, mid_x + eps),
-                                    random.uniform(mid_y - eps, mid_y + eps),
-                                    random.uniform(mid_z - eps, mid_z + eps)]
-                # augmented_frame = list(itertools.chain.from_iterable(augmented_frame))
-                augmented_entries[augment_count].append(augmented_frame)
+            # for i in range(42):
+            #     mid_x = (x_intervals[i][0] + x_intervals[i][1])/2
+            #     mid_y = (y_intervals[i][0] + y_intervals[i][1])/2
+            #     mid_z = (z_intervals[i][0] + z_intervals[i][1])/2
+            #     augmented_frame = [random.uniform(mid_x - eps, mid_x + eps),
+            #                         random.uniform(mid_y - eps, mid_y + eps),
+            #                         random.uniform(mid_z - eps, mid_z + eps)]
+            augmented_entries[augment_count].append(augmented_frame)
 
     for i in range(AUGMENTED_ENTRIES_COUNT):
         augmented_entries[i] = list(itertools.chain.from_iterable(augmented_entries[i]))
