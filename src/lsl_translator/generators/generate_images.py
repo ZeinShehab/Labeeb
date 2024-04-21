@@ -96,15 +96,19 @@ def main():
 
     time.sleep(0.5)
 
-    idx =   720      
-    number = 49                          # Number of word in labels
-
+    idx =   720
+    number = 57                          # Number of word in labels
     iterations = 840                     # Entries per Word
+
+    training = False if (idx == 300 or idx == 720) else True
+    log_path = csv_path_train if training else csv_path_test 
+    save_path = train_dir if training else test_dir
+
     print("Prepare to start capture")
     time.sleep(2)
     while True and idx < iterations:
-        time.sleep(0.15)
-        # time.sleep(0.75)
+        # time.sleep(0.15)
+        time.sleep(0.5)
         key = cv.waitKey(10)
 
         if key == 27:
@@ -116,9 +120,9 @@ def main():
     
         if landmark_list is not None and multihanded(landmark_list) == nb_of_hands:
 
-                logging_csv(number, landmark_list,csv_path_test)
-                save_image(test_dir, image, number, idx)
-                idx += 1
+            logging_csv(number, landmark_list,log_path)
+            save_image(save_path, image, number, idx)
+            idx += 1
 
         cv.imshow('Hand Gesture Recognition', image)
 
