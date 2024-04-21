@@ -1,13 +1,9 @@
-import csv
 import copy
 import itertools
-
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
 
-
-NUM_CLASSES = 54
 
 class MediaPipe:
     USE_STATIC_IMAGE_MODE = True
@@ -144,11 +140,12 @@ class MediaPipe:
         image.flags.writeable = True
 
         return results.multi_hand_landmarks is not None
-    
-    
-    def log_to_csv(class_index, landmark_list, csv_path):
-        if 0 <= class_index <= NUM_CLASSES:
-            with open(csv_path, 'a', newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([class_index, *landmark_list])
-            return
+
+        
+    def num_hands(landmark_list):
+        second_half = [lm for lm in landmark_list[63:]]
+
+        if all([v == 0.0 for v in second_half]):
+            return 1
+        else: 
+            return 2
