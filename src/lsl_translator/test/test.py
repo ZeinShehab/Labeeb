@@ -5,9 +5,13 @@ import numpy as np
 
 from xgboost import XGBClassifier
 model_save_path = 'C:/Users/zeinshehab/LSL_Translator/src/lsl_translator/model/gesture_classifier.pkl'
+model2_save_path = 'C:/Users/zeinshehab/LSL_Translator/src/lsl_translator/model/keypoint_classifier.pkl'
+
+image = cv.imread('C:/Users/zeinshehab/LSL_Translator/src/lsl_translator/test/test_image2.jpg')
+
 
 mp = MediaPipe()
-path = "C:/Users/zeinshehab/LSL_Translator/images/temp/1"
+path = "C:/Users/zeinshehab/LSL_Translator/images/temp/0"
 data = os.listdir(path)
 
 print(data)
@@ -22,12 +26,14 @@ for name in data:
 for image in images:
     print(mp.contains_landmarks(image))
 
+symbol_landmarks = mp.get_multi_hand_landmarks(image)
 gesture_landmarks = mp.get_multi_hand_landmarks_gesture(images)
-# print(gesture_landmarks)
+# # print(gesture_landmarks)
 
 loaded_model = XGBClassifier()
 loaded_model.load_model(model_save_path)
 
+# xs = np.array(symbol_landmarks)
 xs = np.array(gesture_landmarks)
 xs = xs.reshape((1, -1))
 
@@ -49,12 +55,14 @@ print(p)
 # xs[0][0] = 1.0
 # print(xs)
 
+
+
 # import numpy as np
 
 # data_directory = "data/"
 # train_dataset = f'{data_directory}gesture_train.csv'
 # test_dataset = f'{data_directory}gesture_test.csv'
-# augmented_dataset = f'{data_directory}augmented_gestures_train.csv'
+# augmented_dataset = f'{data_directory}augmented_gestures_test.csv'
 
 # recorded_gesture = np.loadtxt(train_dataset, delimiter=',', dtype='float32', usecols=list(range(1, (126 * 10) + 1)))
 # augmented_gesture = np.loadtxt(augmented_dataset, delimiter=',', dtype='float32', usecols=list(range(1, (126 * 10) + 1)))
