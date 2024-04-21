@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import numpy as np
 import traceback
 import cv2 as cv
-from lsl_translator.helpers import MediaPipe
+from lsl_translator.utils import MediaPipe
 from lsl_translator.model import KeypointClassifier
 
 app = Flask(__name__)

@@ -1,17 +1,17 @@
-from lsl_translator.helpers.mediapipe_helper import MediaPipe
+from lsl_translator.utils import MediaPipe
 import cv2 as cv
 import os
 import numpy as np
 
 from xgboost import XGBClassifier
-model_save_path = 'C:/Users/zeinshehab/LSL_Translator/src/lsl_translator/model/gesture_classifier.pkl'
-model2_save_path = 'C:/Users/zeinshehab/LSL_Translator/src/lsl_translator/model/keypoint_classifier.pkl'
+model_save_path = 'C:/Users/zeins/LSL_Translator/src/lsl_translator/model/gesture_classifier.pkl'
+model2_save_path = 'C:/Users/zeins/LSL_Translator/src/lsl_translator/model/keypoint_classifier.pkl'
 
-image = cv.imread('C:/Users/zeinshehab/LSL_Translator/src/lsl_translator/test/test_image2.jpg')
+image = cv.imread('C:/Users/zeins/LSL_Translator/src/lsl_translator/test/test_image2.jpg')
 
 
 mp = MediaPipe()
-path = "C:/Users/zeinshehab/LSL_Translator/images/temp/0"
+path = "C:/Users/zeins/LSL_Translator/images/temp/0"
 data = os.listdir(path)
 
 print(data)
