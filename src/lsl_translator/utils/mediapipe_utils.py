@@ -7,6 +7,8 @@ import mediapipe as mp
 import numpy as np
 
 
+NUM_CLASSES = 54
+
 class MediaPipe:
     USE_STATIC_IMAGE_MODE = True
     MIN_DETECTION_CONFIDENCE = 0.5
@@ -67,7 +69,6 @@ class MediaPipe:
         landmark_points = []
         base_x, base_y, base_z = 0, 0, 0
 
-        # Keypoint
         index = 0
         for landmark in landmarks:
             landmark_x, landmark_y, landmark_z = landmark[0], landmark[1], landmark[2]
@@ -80,11 +81,9 @@ class MediaPipe:
             landmark_z = landmark_z - base_z
 
             landmark_points.append([landmark_x, landmark_y, landmark_z])
-
             index += 1
 
         landmark_points = list(itertools.chain.from_iterable(landmark_points))
-                
         max_value = max(list(map(abs, landmark_points)))
 
         def normalize_(n):
@@ -94,8 +93,8 @@ class MediaPipe:
 
         return landmark_points
 
-    def get_multi_hand_landmarks_gesture(self, images):
 
+    def get_multi_hand_landmarks_gesture(self, images):
         multi_hand_gesture_landmarks = []
         previous_frame_landmarks = []
 
@@ -135,6 +134,7 @@ class MediaPipe:
         multi_hand_gesture_landmarks = list(itertools.chain.from_iterable(multi_hand_gesture_landmarks))
         return multi_hand_gesture_landmarks
     
+
     def contains_landmarks(self, image):
         image = cv.flip(image, 1)
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -144,3 +144,11 @@ class MediaPipe:
         image.flags.writeable = True
 
         return results.multi_hand_landmarks is not None
+    
+    
+    def log_to_csv(class_index, landmark_list, csv_path):
+        if 0 <= class_index <= NUM_CLASSES:
+            with open(csv_path, 'a', newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([class_index, *landmark_list])
+            return
