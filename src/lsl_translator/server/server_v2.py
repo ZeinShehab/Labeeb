@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = KeypointClassifier()
+    model = SymbolClassifier()
     mp = MediaPipe()
 
     if model:
