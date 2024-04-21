@@ -1,1 +1,2 @@
-from lsl_translator.model.keypoint_classifier import KeypointClassifier
+from lsl_translator.model.gesture_classifier import GestureClassifier
+from lsl_translator.model.symbol_classifier import SymbolClassifier
