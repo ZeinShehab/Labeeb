@@ -3,7 +3,7 @@ import numpy as np
 import traceback
 import cv2 as cv
 from lsl_translator.utils import MediaPipe
-from lsl_translator.model import KeypointClassifier
+from lsl_translator.model import SymbolClassifier
 
 app = Flask(__name__)
 
