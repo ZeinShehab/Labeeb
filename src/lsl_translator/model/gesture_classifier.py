@@ -9,3 +9,16 @@ class GestureClassifier:
 
     def predict(self, landmarks):
         return self.model.predict(landmarks)
+    
+    def predict_confidence(self, landmarks):
+        pred_proba = self.model.predict_proba(landmarks)
+        pred_proba = pred_proba[0]
+        # pred = np.argmax(pred_proba)
+        pred = 0.0
+        confidence = 0.0
+        for i in range(len(pred_proba)):
+            if pred_proba[i] > confidence:
+                pred = i
+                confidence = pred_proba[i]
+
+        return [pred, confidence]
