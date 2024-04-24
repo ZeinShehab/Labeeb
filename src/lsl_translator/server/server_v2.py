@@ -52,17 +52,15 @@ def predict_gesture():
         try:
             files = request.files.getlist('image')
             # file_data = [file.read() for file in files]
-            print(files)
              
             if not files:
-                return jsonify({'error': 'No files received'}), 400 
+                return jsonify({'error': 'No files received'}), 400
+             
             filestrs = [file.read() for file in files]
-            
             file_bytes = [np.fromstring(filestr, np.uint8) for filestr in filestrs]
-            print()
             images = [cv.imdecode(file_byte, cv.IMREAD_UNCHANGED) for file_byte in file_bytes]
-
             gesture_landmarks = mp.get_multi_hand_landmarks_gesture(images)
+
             if gesture_landmarks is not None:
                 pred_landmarks = np.array(gesture_landmarks)
                 pred_landmarks = pred_landmarks.reshape(1, -1)
