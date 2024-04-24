@@ -24,14 +24,13 @@ class GeneratorUtils:
         
         return canvas
 
-
-    def save_image(self, images_dir, resized_image, image_number, image_idx):
-        image_filename = os.path.join(images_dir, f'{image_number}_{image_idx}.jpg')
+    def save_image(self, images_dir, resized_image, gesture_index, sequence_number, frame_idx):
+        image_filename = os.path.join(images_dir, f'{gesture_index}_{sequence_number}_{frame_idx}.jpg')
         
         compression_params = [cv.IMWRITE_JPEG_QUALITY, 80]
         cv.imwrite(image_filename, resized_image, compression_params)
         
-        print(f"[+] Saved image: {image_number}_{image_idx}")
+        print(f"[+] Saved image: {sequence_number}_{frame_idx}")
 
 
     def log_to_csv(self, class_index, landmark_list, csv_path):
