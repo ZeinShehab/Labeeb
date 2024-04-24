@@ -12,7 +12,7 @@ dataset = f'{data_directory}gesture_test.csv'
 augment_save_path = f'{data_directory}augmented_gestures_test.csv'
 
 EPS = 0.001
-NUM_CLASSES = 2
+NUM_CLASSES = 3
 SEQUENCE_FRAMES = 10
 MULTI_HAND_LANDMARKS = 126
 MAX_COL = (MULTI_HAND_LANDMARKS * SEQUENCE_FRAMES) + 1
