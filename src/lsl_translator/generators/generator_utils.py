@@ -6,7 +6,7 @@ import os
 
 
 class GeneratorUtils:
-    NUM_CLASSES = 54
+    NUM_CLASSES = 57
 
     def __init__(self) -> None:
         pass
