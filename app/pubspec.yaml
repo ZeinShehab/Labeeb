@@ -66,6 +66,7 @@ flutter:
     - assets/combinations-arabic.json
     - assets/labels-arabic.txt
     - assets/words-arabic.txt
+    - assets/gestures-arabic.txt
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

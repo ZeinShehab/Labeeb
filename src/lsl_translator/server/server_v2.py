@@ -17,10 +17,10 @@ def predict():
         try:
             file = request.files['image']
             filestr = file.read()
-            file_bytes = np.fromstring(filestr, np.uint8)
+            file_bytes = np.frombuffer(filestr, np.uint8)       # was .fromstring
             image = cv.imdecode(file_bytes, cv.IMREAD_UNCHANGED)
 
-            # image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)  # PLATFORM DEPENDENT FIX LATER
+            image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)  # PLATFORM DEPENDENT FIX LATER
 
             multi_hand_landmarks = mp.get_multi_hand_landmarks(image)
 
@@ -52,13 +52,18 @@ def predict_gesture():
         try:
             files = request.files.getlist('image')
             # file_data = [file.read() for file in files]
-             
             if not files:
                 return jsonify({'error': 'No files received'}), 400
              
             filestrs = [file.read() for file in files]
-            file_bytes = [np.fromstring(filestr, np.uint8) for filestr in filestrs]
+            file_bytes = [np.frombuffer(filestr, np.uint8) for filestr in filestrs]
             images = [cv.imdecode(file_byte, cv.IMREAD_UNCHANGED) for file_byte in file_bytes]
+            
+            
+            for i in range(0, len(images)):
+                images[i] = cv.rotate(images[i], cv.ROTATE_90_CLOCKWISE)
+                cv.imwrite(f"images_{i}.jpg", images[i])
+
             gesture_landmarks = mp.get_multi_hand_landmarks_gesture(images)
 
             if gesture_landmarks is not None:
