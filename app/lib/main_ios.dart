@@ -312,6 +312,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 context: context,
                                 builder: (BuildContext context) {
                                   return AlertDialog(
+                                    backgroundColor: darkBackgroundColor,
                                     content: _popupWidget(),
                                   );
                                 },
