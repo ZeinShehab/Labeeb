@@ -1,5 +1,3 @@
-import 'package:path/path.dart';
-
 List<String> mapCombinations(
     List<String> charSequence, Map<String, String> combinations) {
   List<String> result = charSequence;
