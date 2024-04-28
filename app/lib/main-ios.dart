@@ -90,11 +90,15 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
           var request = http.MultipartRequest('POST', Uri.parse('http://192.168.1.101:5000/predict')); // home
           request.files.add(await http.MultipartFile.fromPath('image', picture.path));
-          var response = await request.send();
+          var response = await request.send(); 
           String responseBody = await response.stream.bytesToString();
           final jsonData = jsonDecode(responseBody);
 
           prediction = jsonData['prediction'];
+
+          if (prediction == -1) {
+            continue; 
+          }
 
          setState(() {
             charSequence.add(labels[prediction]);
@@ -139,8 +143,14 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           var responseGesture = await request.send();
           String responseBodyGesture = await responseGesture.stream.bytesToString();
           final jsonDataGesture = jsonDecode(responseBodyGesture);
+          
           prediction = jsonDataGesture['prediction'];
+          
           print("Gesture $prediction");
+          
+          if (prediction == -1) {
+            continue; 
+          }
          setState(() {
             charSequence.add(gestures[prediction]);
             //charSequence.insert(0, labels[prediction]);
@@ -204,188 +214,581 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   Widget _popupWidget() {
-    return SizedBox(
-      height: 100, // Adjust the height as needed
-      width: double.infinity,
-      // Define the appearance of the popup widget here
-      child: Center(
-        child: Text(
-          bestSentence,
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
+  return SizedBox(
+    height: 300, // Adjust the height as needed
+    width: 300,
+    // Define the appearance of the popup widget here
+    child: Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical, // Scroll vertically
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            bestSentence, 
+            style: TextStyle(
+              fontSize: 30,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ),
-    );
+    ),
+  );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          FutureBuilder<void>(
-            future: _initializeControllerFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return SizedBox.expand(
-                  child: ClipRect(
-                    child: OverflowBox(
-                      alignment: Alignment.center,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _controller.value.previewSize!.height,
-                          height: _controller.value.previewSize!.width,
-                          child: CameraPreview(_controller),
-                        ),
+Widget build(BuildContext context) {
+    Color gestureBtn = Color(0xFF0A014f);
+    Color symbolBtn  = Color(0xFFCD9FCC);
+    Color cleatBtn   = Color(0xFFF2BEFC);
+  return Scaffold(
+    body: Stack(
+      children: [
+        FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return SizedBox.expand(
+                child: ClipRect(
+                  child: OverflowBox(
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _controller.value.previewSize!.height,
+                        height: _controller.value.previewSize!.width,
+                        child: CameraPreview(_controller),
                       ),
                     ),
                   ),
-                );
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            // Show the popup widget when the text is tapped
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: _popupWidget(),
-                                );
-                              },
-                            );
-                          },
-                          onDoubleTap: () async {
-                            await Clipboard.setData(
-                              ClipboardData(text: bestSentence),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Text copied to clipboard'),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(10),
+                ),
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  // ADD THE BACKGROUND HERE 
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          // Show the popup widget when the text is tapped
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                content: _popupWidget(),
+                              );
+                            },
+                          );
+                        },
+                        onDoubleTap: () async {
+                          await Clipboard.setData(
+                            ClipboardData(text: bestSentence),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Text copied to clipboard'),
                             ),
-                            child: Center(
-                              child: GestureDetector(
-                                onTap: () {
-                                  print("Tapped on text");
-                                },
-                                onDoubleTap: () {
-                                  print("Double tapped on text");
-                                  // Handle double tap action
-                                  // Example: Copy text to clipboard
-                                  Clipboard.setData(
-                                    ClipboardData(text: bestSentence),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Text copied to clipboard'),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  bestSentence,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white, // Text color
-                                  ),
-                                  textAlign: TextAlign.center,
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Text(
+                                bestSentence,
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  color: Colors.white, // Text color
                                 ),
+                                textAlign: TextAlign.start,
                               ),
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: clearText,
-                        child: Text(
-                          'Clear',
-                          style: TextStyle(fontSize: 12),
+                    ),
+                    SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: clearText,
+                      child: Text(
+                        'Clear',
+                        style: TextStyle(fontSize: 12, color: Colors.black), // Change text color
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
+                        backgroundColor: Colors.white, // Change button color
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 120, // Set height equal to width
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            if (captureGestureSequence) {
+                              setState(() {
+                                captureGestureSequence = false;
+                                _controller.setFlashMode(FlashMode.off);
+                                print(captureGestureSequence);
+                                captureFrames(); 
+                              });
+                            }
+                            else {
+                              setState(() {
+                                captureGestureSequence = true;
+                                print(captureGestureSequence);
+                                _controller.setFlashMode(FlashMode.off);
+                                captureFrames(); 
+                              });
+                            }
+                          },
+                          backgroundColor: captureGestureSequence ? Colors.red : gestureBtn, // Change button color
+                          child: Text(
+                            captureGestureSequence ? 'Stop Gesture' : 'Start Gesture', // Change button text
+                            style: TextStyle(fontSize: 20, color: Colors.white), // Change text color
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (captureGestureSequence) {
-                        setState(() {
-                          captureGestureSequence = false;
-                          print(captureGestureSequence);
-                          captureFrames(); 
-                        });
-                      }
-                      else {
-                        setState(() {
-                          captureGestureSequence = true;
-                          print(captureGestureSequence);
-                          captureFrames(); 
-                        });
-                      }
-                    },
-                    child: Text(
-                      'Start Gesture',
-                      style: TextStyle(fontSize: 12),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 16,
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: SizedBox(
+                        height: 120, // Set height equal to width
+                        child: FloatingActionButton(
+                          
+                          onPressed: () {
+                            // Toggle capture state
+                            if (isCapturing) {
+                              _controller.setFlashMode(FlashMode.off);
+                              stopCapture();
+                            } else {
+                              _controller.setFlashMode(FlashMode.off);
+                              startCapture();
+                            }
+                            // Update capture state
+                          },
+                          backgroundColor: isCapturing ? Colors.red : symbolBtn, // Change button color
+                          child: Text(
+                            isCapturing ? 'Stop Symbol' : 'Start Symbol', // Change button text
+                            style: TextStyle(fontSize: 20, color: isCapturing ? Colors.white : Colors.black), // Change text color
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  FloatingActionButton(
-                    onPressed: () {
-                      // Toggle capture state
-                      if (isCapturing) {
-                        stopCapture();
-                      } else {
-                        _controller.setFlashMode(FlashMode.off);
-                        startCapture();
-                      }
-                      // Update capture state
-                    },
-                    child: Icon(isCapturing ? Icons.stop : Icons.camera_alt),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
+}
+// Circular buttons
+// @override
+// Widget build(BuildContext context) {
+//     Color gestureBtn = Color(0xFF0A014f);
+//     Color symbolBtn  = Color(0xFFCD9FCC);
+//     Color cleatBtn   = Color(0xFFF2BEFC);
+//   return Scaffold(
+//     body: Stack(
+//       children: [
+//         FutureBuilder<void>(
+//           future: _initializeControllerFuture,
+//           builder: (context, snapshot) {
+//             if (snapshot.connectionState == ConnectionState.done) {
+//               return SizedBox.expand(
+//                 child: ClipRect(
+//                   child: OverflowBox(
+//                     alignment: Alignment.center,
+//                     child: FittedBox(
+//                       fit: BoxFit.cover,
+//                       child: SizedBox(
+//                         width: _controller.value.previewSize!.height,
+//                         height: _controller.value.previewSize!.width,
+//                         child: CameraPreview(_controller),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               );
+//             } else {
+//               return const Center(child: CircularProgressIndicator());
+//             }
+//           },
+//         ),
+//         Positioned(
+//           bottom: 0,
+//           left: 0,
+//           right: 0,
+//           child: Padding(
+//             padding: const EdgeInsets.all(16),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.stretch,
+//               children: [
+//                 Row(
+//                   // ADD THE BACKGROUND HERE 
+//                   children: [
+//                     Expanded(
+//                       child: GestureDetector(
+//                         onTap: () {
+//                           // Show the popup widget when the text is tapped
+//                           showDialog(
+//                             context: context,
+//                             builder: (BuildContext context) {
+//                               return AlertDialog(
+//                                 content: _popupWidget(),
+//                               );
+//                             },
+//                           );
+//                         },
+//                         onDoubleTap: () async {
+//                           await Clipboard.setData(
+//                             ClipboardData(text: bestSentence),
+//                           );
+//                           ScaffoldMessenger.of(context).showSnackBar(
+//                             SnackBar(
+//                               content: Text('Text copied to clipboard'),
+//                             ),
+//                           );
+//                         },
+//                         child: Container(
+//                           padding: EdgeInsets.all(8),
+//                           decoration: BoxDecoration(
+//                             color: Colors.black.withOpacity(0.5),
+//                             borderRadius: BorderRadius.circular(10),
+//                           ),
+//                           child: Center(
+//                             child: SingleChildScrollView(
+//                               scrollDirection: Axis.horizontal,
+//                               child: Text(
+//                                 bestSentence,
+//                                 style: TextStyle(
+//                                   fontSize: 25,
+//                                   color: Colors.white, // Text color
+//                                 ),
+//                                 textAlign: TextAlign.start,
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(width: 8),
+//                     ElevatedButton(
+//                       onPressed: clearText,
+//                       child: Text(
+//                         'Clear',
+//                         style: TextStyle(fontSize: 12, color: Colors.black), // Change text color
+//                       ),
+//                       style: ElevatedButton.styleFrom(
+//                         padding: const EdgeInsets.symmetric(
+//                           vertical: 10,
+//                           horizontal: 16,
+//                         ),
+//                         backgroundColor: Colors.white, // Change button color
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//                 SizedBox(height: 16),
+                
+//                 Row(
+//                   children: [
+//                     Expanded(
+//                       child: SizedBox(
+//                         height: 120, // Set height equal to width
+//                         child: FloatingActionButton(
+//                           shape: CircleBorder(),
+//                           onPressed: () {
+//                             if (captureGestureSequence) {
+//                               setState(() {
+//                                 captureGestureSequence = false;
+//                                 _controller.setFlashMode(FlashMode.off);
+//                                 print(captureGestureSequence);
+//                                 captureFrames(); 
+//                               });
+//                             }
+//                             else {
+//                               setState(() {
+//                                 captureGestureSequence = true;
+//                                 print(captureGestureSequence);
+//                                 _controller.setFlashMode(FlashMode.off);
+//                                 captureFrames(); 
+//                               });
+//                             }
+//                           },
+//                           backgroundColor: captureGestureSequence ? Colors.red : gestureBtn, // Change button color
+//                           child: Text(
+//                             captureGestureSequence ? 'Stop Gesture' : ' Gesture', // Change button text
+//                             style: TextStyle(fontSize: 20, color: Colors.white), // Change text color
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(width: 16),
+//                     Expanded(
+//                       child: SizedBox(
+//                         height: 120, // Set height equal to width
+//                         child: FloatingActionButton(
+//                           shape: CircleBorder(),
+//                           onPressed: () {
+//                             // Toggle capture state
+//                             if (isCapturing) {
+//                               _controller.setFlashMode(FlashMode.off);
+//                               stopCapture();
+//                             } else {
+//                               _controller.setFlashMode(FlashMode.off);
+//                               startCapture();
+//                             }
+//                             // Update capture state
+//                           },
+//                           backgroundColor: isCapturing ? Colors.red : symbolBtn, // Change button color
+//                           child: Text(
+//                             isCapturing ? 'Stop Symbol' : ' Symbol', // Change button text
+//                             style: TextStyle(fontSize: 20, color: isCapturing ? Colors.white : Colors.black), // Change text color
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+// Background 
+// 
+// @override
+// Widget build(BuildContext context) {
+//   Color gestureBtn = Color(0xFF0A014F);
+//   Color symbolBtn = Color(0xFFCD9FCC);
+//   Color cleatBtn = Color(0xFFF2BEFC);
+
+//   return Scaffold(
+//     body: Stack(
+//       children: [
+//         FutureBuilder<void>(
+//           future: _initializeControllerFuture,
+//           builder: (context, snapshot) {
+//             if (snapshot.connectionState == ConnectionState.done) {
+//               return SizedBox.expand(
+//                 child: ClipRect(
+//                   child: OverflowBox(
+//                     alignment: Alignment.center,
+//                     child: FittedBox(
+//                       fit: BoxFit.cover,
+//                       child: SizedBox(
+//                         width: _controller.value.previewSize!.height,
+//                         height: _controller.value.previewSize!.width,
+//                         child: CameraPreview(_controller),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               );
+//             } else {
+//               return const Center(child: CircularProgressIndicator());
+//             }
+//           },
+//         ),
+//         Positioned(
+//           bottom: 0,
+//           left: 0,
+//           right: 0,
+//           child: Container(
+//             decoration: BoxDecoration(
+//               color: Color(0xFF424242), // Set background color
+//               borderRadius: BorderRadius.only(
+//                 topLeft: Radius.circular(10),
+//                 topRight: Radius.circular(10),
+//               ),
+//             ),
+//             child: Padding(
+//               padding: const EdgeInsets.all(16),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.stretch,
+//                 children: [
+//                   Row(
+//                     children: [
+//                       Expanded(
+//                         child: GestureDetector(
+//                           onTap: () {
+//                             // Show the popup widget when the text is tapped
+//                             showDialog(
+//                               context: context,
+//                               builder: (BuildContext context) {
+//                                 return AlertDialog(
+//                                   content: _popupWidget(),
+//                                 );
+//                               },
+//                             );
+//                           },
+//                           onDoubleTap: () async {
+//                             await Clipboard.setData(
+//                               ClipboardData(text: bestSentence),
+//                             );
+//                             ScaffoldMessenger.of(context).showSnackBar(
+//                               SnackBar(
+//                                 content: Text('Text copied to clipboard'),
+//                               ),
+//                             );
+//                           },
+//                           child: Container(
+//                             padding: EdgeInsets.all(8),
+//                             decoration: BoxDecoration(
+//                               color: Colors.black.withOpacity(0.5),
+//                               borderRadius: BorderRadius.circular(10),
+//                             ),
+//                             child: Center(
+//                               child: SingleChildScrollView(
+//                                 scrollDirection: Axis.horizontal,
+//                                 child: Text(
+//                                   bestSentence,
+//                                   style: TextStyle(
+//                                     fontSize: 25,
+//                                     color: Colors.white, // Text color
+//                                   ),
+//                                   textAlign: TextAlign.start,
+//                                 ),
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                       SizedBox(width: 8),
+//                       ElevatedButton(
+//                         onPressed: clearText,
+//                         child: Text(
+//                           'Clear',
+//                           style:
+//                               TextStyle(fontSize: 12, color: Colors.black), // Change text color
+//                         ),
+//                         style: ElevatedButton.styleFrom(
+//                           padding: const EdgeInsets.symmetric(
+//                             vertical: 10,
+//                             horizontal: 16,
+//                           ),
+//                           backgroundColor:
+//                               Colors.white, // Change button color
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   SizedBox(height: 16),
+//                   Row(
+//                     children: [
+//                       Expanded(
+//                         child: SizedBox(
+//                           height: 120, // Set height equal to width
+//                           child: FloatingActionButton(
+//                             onPressed: () {
+//                               if (captureGestureSequence) {
+//                                 setState(() {
+//                                   captureGestureSequence = false;
+//                                   _controller.setFlashMode(FlashMode.off);
+//                                   print(captureGestureSequence);
+//                                   captureFrames();
+//                                 });
+//                               } else {
+//                                 setState(() {
+//                                   captureGestureSequence = true;
+//                                   print(captureGestureSequence);
+//                                   _controller.setFlashMode(FlashMode.off);
+//                                   captureFrames();
+//                                 });
+//                               }
+//                             },
+//                             backgroundColor: captureGestureSequence
+//                                 ? Colors.red
+//                                 : gestureBtn, // Change button color
+//                             child: Text(
+//                               captureGestureSequence
+//                                   ? 'Stop Gesture'
+//                                   : 'Start Gesture', // Change button text
+//                               style: TextStyle(
+//                                   fontSize: 20,
+//                                   color: Colors.white), // Change text color
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                       SizedBox(width: 16),
+//                       Expanded(
+//                         child: SizedBox(
+//                           height: 120, // Set height equal to width
+//                           child: FloatingActionButton(
+//                             onPressed: () {
+//                               // Toggle capture state
+//                               if (isCapturing) {
+//                                 _controller.setFlashMode(FlashMode.off);
+//                                 stopCapture();
+//                               } else {
+//                                 _controller.setFlashMode(FlashMode.off);
+//                                 startCapture();
+//                               }
+//                               // Update capture state
+//                             },
+//                             backgroundColor: isCapturing
+//                                 ? Colors.red
+//                                 : symbolBtn, // Change button color
+//                             child: Text(
+//                               isCapturing
+//                                   ? 'Stop Symbol'
+//                                   : 'Start Symbol', // Change button text
+//                               style: TextStyle(
+//                                   fontSize: 20,
+//                                   color: isCapturing
+//                                       ? Colors.white
+//                                       : Colors.black), // Change text color
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
