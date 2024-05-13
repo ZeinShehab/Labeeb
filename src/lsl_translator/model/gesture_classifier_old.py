@@ -1,6 +1,6 @@
 from xgboost import XGBClassifier
 
-class GestureClassifier:
+class GestureClassifierOld:
     MODEL_SAVE_PATH = "src/lsl_translator/model/gesture_classifier.pkl"
 
     def __init__(self) -> None:
