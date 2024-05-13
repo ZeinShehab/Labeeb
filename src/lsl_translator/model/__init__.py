@@ -1,2 +1,4 @@
 from lsl_translator.model.gesture_classifier import GestureClassifier
+from lsl_translator.model.gesture_classifier_old import GestureClassifierOld
 from lsl_translator.model.symbol_classifier import SymbolClassifier
+from lsl_translator.model.symbol_classifier_old import SymbolClassifierOld

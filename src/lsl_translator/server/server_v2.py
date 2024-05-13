@@ -4,13 +4,20 @@ import traceback
 import cv2 as cv
 from lsl_translator.utils import MediaPipe
 from lsl_translator.model import SymbolClassifier
+from lsl_translator.model import SymbolClassifierOld
 from lsl_translator.model import GestureClassifier
+from lsl_translator.model import GestureClassifierOld
 
 app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return ('Hello House!')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     model = SymbolClassifier()
+    # model = SymbolClassifierOld()
     mp = MediaPipe()
 
     if model:
@@ -20,17 +27,16 @@ def predict():
             file_bytes = np.frombuffer(filestr, np.uint8)       # was .fromstring
             image = cv.imdecode(file_bytes, cv.IMREAD_UNCHANGED)
 
-            image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)  # PLATFORM DEPENDENT FIX LATER
+            image = cv.rotate(image, cv.ROTATE_180)  # PLATFORM DEPENDENT FIX LATER
+            # cv.imshow("test", image)
+            # cv.waitKey(0)
 
             multi_hand_landmarks = mp.get_multi_hand_landmarks(image)
 
             if multi_hand_landmarks is not None:
-                pred_landmarks = np.array(multi_hand_landmarks)
-                pred_landmarks = pred_landmarks.reshape(1, -1)
-                # pred = model.predict(pred_landmarks)
-                # pred_proba = model.predict_proba(pred_landmarks)
-                # pred = np.argmax(pred_proba)
-                # confidence = pred_proba[pred]
+                pred_landmarks = np.array(multi_hand_landmarks
+                                          )
+                # pred_landmarks = pred_landmarks.reshape(1, -1)       # FOR OLD MODEL
 
                 pred, confidence = model.predict_confidence(pred_landmarks)
 
@@ -46,6 +52,7 @@ def predict():
 @app.route('/predict_gesture', methods=['POST'])
 def predict_gesture():
     model = GestureClassifier()
+    # model = GestureClassifierOld()
     mp = MediaPipe()
 
     if model:
@@ -68,7 +75,7 @@ def predict_gesture():
 
             if gesture_landmarks is not None:
                 pred_landmarks = np.array(gesture_landmarks)
-                pred_landmarks = pred_landmarks.reshape(1, -1)
+                # pred_landmarks = pred_landmarks.reshape(1, -1)
                 pred, confidence = model.predict_confidence(pred_landmarks)
 
                 return jsonify({'prediction': int(pred), 'confidence' : float(confidence)})
