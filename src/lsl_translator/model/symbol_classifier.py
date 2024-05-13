@@ -1,29 +1,31 @@
-from xgboost import XGBClassifier
+import tensorflow as tf
 import numpy as np
 
 class SymbolClassifier:
-    MODEL_SAVE_PATH = "src/lsl_translator/model/symbol_classifier.pkl"
+    def __init__(
+        self,
+        model_path='src/lsl_translator/model/symbol_classifier.tflite',
+        num_threads=1,
+    ):
+        self.interpreter = tf.lite.Interpreter(model_path=model_path,
+                                               num_threads=num_threads)
 
-    def __init__(self) -> None:
-        self.model = XGBClassifier()
-        self.model.load_model(self.MODEL_SAVE_PATH)
+        self.interpreter.allocate_tensors()
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
 
-    def predict(self, landmarks):
-        return self.model.predict(landmarks)
-    
-    def predict_proba(self, landmarks):
-        return self.model.predict_proba(landmarks)
-    
-    def predict_confidence(self, landmarks):
-        pred_proba = self.model.predict_proba(landmarks)
-        pred_proba = pred_proba[0]
+    def predict_confidence(self, landmark_list):
+        input_details_tensor_index = self.input_details[0]['index']
+        self.interpreter.set_tensor(
+            input_details_tensor_index,
+            np.array([landmark_list], dtype=np.float32))
+        self.interpreter.invoke()
 
-        # pred = np.argmax(pred_proba)
-        pred = 0.0
-        confidence = 0.0
-        for i in range(len(pred_proba)):
-            if pred_proba[i] > confidence:
-                pred = i
-                confidence = pred_proba[i]
+        output_details_tensor_index = self.output_details[0]['index']
 
-        return [pred, confidence]
+        result = self.interpreter.get_tensor(output_details_tensor_index)
+        result = np.squeeze(result)
+
+        result_index = np.argmax(result)
+
+        return result_index, result[result_index]
