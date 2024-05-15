@@ -1,1 +1,2 @@
 from lsl_translator.utils.mediapipe_utils import MediaPipe
+from lsl_translator.utils.hand_landmarker_util import HandLandmarkerUtil
