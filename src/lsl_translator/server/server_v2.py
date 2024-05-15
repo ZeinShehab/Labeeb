@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request
 import numpy as np
 import traceback
 import cv2 as cv
-from lsl_translator.utils import MediaPipe
 from lsl_translator.model import SymbolClassifier
 from lsl_translator.model import GestureClassifier
 from lsl_translator.utils import HandLandmarkerUtil
@@ -29,7 +28,9 @@ def predict():
             # cv.imshow("test", image)
             # cv.waitKey(0)
 
-            mp_image = HandLandmarkerUtil.mp_image_from_numpy(image)
+            cv.imwrite("temp_task.jpg", image)
+            mp_image = HandLandmarkerUtil.mp_image_from_path("C:/Users/zeins/LSL_Translator/temp_task.jpg")
+
             multi_hand_landmarks = hand_landmarker.get_multi_hand_landmarks(mp_image)
 
             if len(multi_hand_landmarks) != 0:
