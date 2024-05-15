@@ -20,11 +20,14 @@ src/lsl_translator/helpers/rename_files.py
 src/lsl_translator/helpers/split_data.py
 src/lsl_translator/model/__init__.py
 src/lsl_translator/model/gesture_classifier.py
+src/lsl_translator/model/gesture_classifier_old.py
 src/lsl_translator/model/symbol_classifier.py
+src/lsl_translator/model/symbol_classifier_old.py
 src/lsl_translator/server/__init__.py
 src/lsl_translator/server/server_v1.py
 src/lsl_translator/server/server_v2.py
 src/lsl_translator/test/__init__.py
 src/lsl_translator/test/test.py
 src/lsl_translator/utils/__init__.py
+src/lsl_translator/utils/hand_landmarker_util.py
 src/lsl_translator/utils/mediapipe_utils.py
