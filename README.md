@@ -7,7 +7,7 @@
 ![TensorFlow](https://img.shields.io/badge/library-TensorFlow-orange)
 ![Mediapipe](https://img.shields.io/badge/library-Mediapipe-red)
 
-## Introduction
+## Description
 **Labeeb** is a Lebanese Sign Language Translator app designed to address communication challenges faced by the deaf and hard-of-hearing community. The app offers real-time translation services for both the Arabic alphabet and common Lebanese words, facilitating seamless communication between sign language users and those seeking to engage with this community.
 
 ## Features
