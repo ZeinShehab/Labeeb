@@ -1,14 +1,22 @@
 import 'dart:async';
+import 'dart:ffi';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart'
-    show Clipboard, ClipboardData, rootBundle;
+// import 'package:flutter/services.dart'
+//     show Clipboard, ClipboardData, rootBundle;
+import 'package:path/path.dart';
 import 'sentence_generator.dart';
 import 'combination_map.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'mediapipe_ios.dart';
+import 'package:image/image.dart' as img;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +48,86 @@ Future<void> main() async {
   );
 }
 
+
+// class HandLandmarkDetector {
+//   static const MethodChannel _channel = MethodChannel('hand_landmark_detector');
+
+//   static Future<List<Map<String, double>>?> detectHandLandmarks() async {
+//   try {
+
+//     final List<dynamic>? result = await _channel.invokeMethod('detectHandLandmarks');
+//     if (result != null) {
+//       return result.map<Map<String, double>>((dynamic landmark) {
+//         return {
+//           'x': landmark['x'] as double,
+//           'y': landmark['y'] as double,
+//           // Add z if needed
+//         };
+//       }).toList();
+//     }
+//   } on PlatformException catch (e) {
+//     print("Error: '${e.message}'.");
+//   }
+//   return null;
+// }
+
+// }
+
+// class HelloWorldChannel {
+//   // static const _channel =
+//   //     MethodChannel('hand_landmark_detector');
+
+//   // static Future<String?> getHelloWorld() async {
+//   //   try {
+//   //     return await _channel.invokeMethod('detectHandLandmarks');
+//   //   } on PlatformException catch (e) {
+//   //     print("Failed to get hello world: '${e.message}'.");
+//   //     return null;
+//   //   }
+//   static const platform = MethodChannel('samples.flutter.dev/battery');
+//   // Get battery level.
+
+// static Future<List<List<double>>> get_landmarks(Uint8List image) async {
+//   try {
+//     final result = await platform.invokeMethod<List>('gen_key', {"image": image});
+//     if (result != null) {
+//       // Convert each element of the inner lists to Double
+//       List<List<double>> formattedResult = [];
+//       for (var list in result) {
+//         List<double> doubleList = [];
+//         for (var element in list) {
+//           try {
+//             double value = element.toDouble(); // Change this line
+//             doubleList.add(value);
+//           } catch (e) {
+//             print('Error converting $element to double: $e');
+//             // Handle the conversion error, you can choose to ignore or handle it based on your requirements
+//           }
+//         }
+//         formattedResult.add(doubleList);
+//       }
+      
+//       print("Formatted Result:");
+//       for (List<double> sublist in formattedResult) {
+//         print(sublist);
+//       }
+//       print(formattedResult.length);
+      
+//       return formattedResult;
+//     } else {
+//       // Handle the case when result is null
+//       print("[!] Error: Result is null");
+//       return [];
+//     }
+//   } on PlatformException catch (e) {
+//     print("[!] Error: $e"); 
+//     return [];
+//   }
+// }
+
+// }
+
+
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
     Key? key,
@@ -68,7 +156,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late Map<String, String> combinations;
   late List<String> gestures;
   late XFile? videoFile;
-
+  String server_url = "https://lsltranslator.pythonanywhere.com";
   bool isCapturing = false; // Flag to track if the camera is on or off
   bool captureGestureSequence =
       false; // Flag to track if capturing gesture sequence is on or off
@@ -83,33 +171,78 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   Future<void> captureFrames() async {
+    // print("Capture Frames");
     while (isCapturing) {
       print('Running...');
       await _controller.startVideoRecording();
       final XFile picture = await _controller.takePicture();
+
+      final img.Image? capturedImage = img.decodeImage(await File(picture.path).readAsBytes());
+      final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+      await File(picture.path).writeAsBytes(img.encodeJpg(orientedImage));
+    
+
       await Future.delayed(const Duration(seconds: 1));
       videoFile = await _controller.stopVideoRecording();
+      
+      // List<dynamic>? handLandmarks = await HandLandmarkDetector.detectHandLandmarks();
+      // print(handLandmarks); 
 
       if (videoFile != null) {
-        int prediction = -1;
+      // int prediction = -1;
 
-        var request = http.MultipartRequest(
-            'POST', Uri.parse('http://192.168.0.105:5000/predict')); // home
-        request.files
-            .add(await http.MultipartFile.fromPath('image', picture.path));
-        var response = await request.send();
-        String responseBody = await response.stream.bytesToString();
-        final jsonData = jsonDecode(responseBody);
+      final fileBytes = await File(picture.path).readAsBytes();
+      
+      // List<List<double>> ? landmarks = await mediapipeUtils.getLandmarks(fileBytes);
+      // final test_image = await rootBundle.load('assets/test_image1.jpg');
+      // final test_bytes = await image.tobyte
+      // final ByteData data = await rootBundle.load('assets/test_image1.jpg');
 
-        prediction = jsonData['prediction'];
+      // List<double> ? landmarks = await mediapipeUtils.getLandmarks(data.buffer.asUint8List());
+      List<double> ? landmarks = await mediapipeUtils.getLandmarks(fileBytes);
+      
+      SymbolClassifier symbol_classifier = SymbolClassifier();
+      final resp = await symbol_classifier.predictConfidence(landmarks);
+      int prediction = resp[0];
+      int confidence = resp[1];
+      print(prediction);
+      print(confidence);
+      // print("Flutter response: $resp"); 
+      // final tempDir = await getTemporaryDirectory();
+      // final tempPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'; 
+      // final compressedFile = await FlutterImageCompress.compressAndGetFile(
+      //   picture.path,
+      //   tempPath,
+      //   minHeight: 1080, // Adjust these parameters as needed
+      //   minWidth: 1080,  // Adjust these parameters as needed
+      //   quality: 10,
+      //   keepExif: false
+      // );
+      //   var request = http.MultipartRequest(
+      //       'POST', Uri.parse(server_url +'/predict')); // home
+      //   request.files
+      //       .add(await http.MultipartFile.fromPath('image', compressedFile!.path));
+      //   Stopwatch stopwatch = Stopwatch()..start();
+      //   var response = await request.send();
+      //   stopwatch.stop();
+      //   double elapsedTimeInSeconds = stopwatch.elapsedMilliseconds / 1000;
+      //   print('Elapsed time for response: $elapsedTimeInSeconds');
+      //   String responseBody = await response.stream.bytesToString();
+      //   final jsonData = jsonDecode(responseBody);
+
+      //   prediction = jsonData['prediction'];
 
         if (prediction == -1) {
           continue;
         }
 
         setState(() {
+          if (confidence > 70) {
+            
+          
           charSequence.add(labels[prediction]);
           //charSequence.insert(0, labels[prediction]);
+          }
         });
 
         setState(() {
@@ -124,6 +257,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       }
       await Future.delayed(const Duration(seconds: 1));
     }
+    // ----------------------------- GESTURES ----------------------------
     while (captureGestureSequence && isCapturing == false) {
       int sequenceLength =
           10; // Adjust the number of frames to capture for gesture sequence
@@ -143,26 +277,63 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       setState(() {
         captureGestureSequence = false;
       });
-
+      // List<XFile?> compressed = [];
+      // for (int i = 0; i < 10; i++) {
+      // // final fileBytes = await File(pictureSequence[i].path).readAsBytes();
+      // final tempDir = await getTemporaryDirectory();
+      // final tempPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'; 
+      // final compressedFile = await FlutterImageCompress.compressAndGetFile(
+      //   pictureSequence[i].path,
+      //   tempPath,
+      //   minHeight: 1080, // Adjust these parameters as needed
+      //   minWidth: 1080,  // Adjust these parameters as needed
+      //   quality: 10,
+      //   keepExif: false
+      // );
+      // compressed.add(compressedFile);
+      // }
+      
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://192.168.0.105:5000/predict_gesture'));
+          'POST', Uri.parse(server_url+'/predict_gesture'));
       for (int i = 0; i < pictureSequence.length; i++) {
         request.files.add(await http.MultipartFile.fromPath(
             'image', pictureSequence[i].path));
+            // 'image', compressed[i]!.path));
       }
+      // // Stopwatch stopwatch = Stopwatch()..start();
       var responseGesture = await request.send();
+      // // stopwatch.stop();
+      // // double elapsedTimeInSeconds = stopwatch.elapsedMilliseconds / 1000;
+      // print('Elapsed time for response: $elapsedTimeInSeconds');
       String responseBodyGesture = await responseGesture.stream.bytesToString();
       final jsonDataGesture = jsonDecode(responseBodyGesture);
 
       prediction = jsonDataGesture['prediction'];
+      // GestureClassifier gesture_classifier = GestureClassifier();
+      // List<Uint8List> gesture_images = [];
 
-      print("Gesture $prediction");
+      // for (var i = 0; i < 10; i++) {
+      //   final fileBytes = await File(pictureSequence[i].path).readAsBytes();
+      //   gesture_images.add(fileBytes);
+      // }
+      
+      // List<double> ? landmarks = await mediapipeUtils.getGestureLandmarks(gesture_images);
+      // if (landmarks.length == 0 ) continue;
+      // final result = await  gesture_classifier.predictConfidence(landmarks);
+      
+      // int gesturePrediction = result[0];
+      // int gestureConfidence = result[1];
+
+      // print("Gesture prediction: $gesturePrediction");
+      // print("Gesture confidence: $gestureConfidence");
+
+      // print("Gesture $prediction");
 
       if (prediction == -1) {
         continue;
       }
       setState(() {
-        charSequence.add(gestures[prediction]);
+          charSequence.add(gestures[prediction]);
         //charSequence.insert(0, labels[prediction]);
       });
 
@@ -182,11 +353,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     }
   }
 
-  void startCapture() {
+  void startCapture() async{
     setState(() {
       isCapturing = true;
     });
-
     captureFrames();
   }
 

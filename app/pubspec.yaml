@@ -39,6 +39,10 @@ dependencies:
   path_provider: ^2.1.1
   path: ^1.8.3
   google_fonts: ^4.0.4
+  flutter_image_compress: ^2.2.0
+  fluttertoast: any
+  tflite_flutter: any
+  image: ^4.1.7
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +72,9 @@ flutter:
     - assets/labels-arabic.txt
     - assets/words-arabic.txt
     - assets/gestures-arabic.txt
+    - assets/symbol_classifier.tflite
+    - assets/test_image1.jpg
+    - assets/gesture_classifier.tflite
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
