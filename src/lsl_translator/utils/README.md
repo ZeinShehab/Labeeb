@@ -1,1 +1,1 @@
-Contains helper file for common Mediapipe functions
+Contains utility file for common Mediapipe functions

@@ -1,1 +1,1 @@
-Contains the saved binary (pkl) file for the xgboost model and the wrapper for CNN model. 
+Contains the models and the jupyter notebooks used for classification.

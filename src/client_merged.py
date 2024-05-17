@@ -10,11 +10,11 @@ mp = MediaPipe()
 gu = GeneratorUtils()
 
 def capture_frame():
-    cap_device = 0
+    cap_device = 'http://192.168.0.104:8080/video'
     cap_width = 960
     cap_height = 540
 
-    cap = cv.VideoCapture(cap_device, cv.CAP_DSHOW)
+    cap = cv.VideoCapture(cap_device)
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
