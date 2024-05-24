@@ -9,6 +9,8 @@
 
 Visit the Labeeb Page [here](https://zeinshehab.github.io/Labeeb/)
 
+---
+
 ## Description
 **Labeeb** is a Lebanese Sign Language Translator app designed to address communication challenges faced by the deaf and hard-of-hearing community. The app offers real-time translation services for both the Arabic alphabet and common Lebanese words, facilitating seamless communication between sign language users and those seeking to engage with this community.
 
