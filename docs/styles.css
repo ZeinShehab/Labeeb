@@ -110,7 +110,7 @@ h6 {
 	top: 0;
 	width: 100%;
 	height: 100%;
-	background: url(D:/LSL_Translator/LSL_Translator/docs/images/pattern.png);
+	background: url(images/pattern.png);
 }
 .banner a.weblink {
 	color:#ffffff;
@@ -218,7 +218,7 @@ h6 {
 	text-decoration:none;
 }
 .video-section {
-	background: url(D:/LSL_Translator/LSL_Translator/docs/images/video-bg.jpg) no-repeat fixed center;
+	background: url(images/video-bg.jpg) no-repeat fixed center;
 	background-size: cover;
 	overflow: hidden;
 }
@@ -357,17 +357,17 @@ h6 {
 	top: 0;
 	width: 100%;
 	height: 100%;
-	background: url(D:/LSL_Translator/LSL_Translator/docs/images/pattern.png);
+	background: url(images/pattern.png);
 }
 .bx-prev {
 	left: -90px !important;
-	background: url(D:/LSL_Translator/LSL_Translator/docs/images/arrow-left.png) no-repeat !important;
+	background: url(images/arrow-left.png) no-repeat !important;
 	background-size: auto auto !important;
 	background-size: 100% 100% !important;
 }
 .bx-next {
 	right: -90px !important;
-	background: url(D:/LSL_Translator/LSL_Translator/docs/images/arrow-right.png) no-repeat !important;
+	background: url(images/arrow-right.png) no-repeat !important;
 	background-size: auto auto !important;
 	background-size: 100% 100% !important;
 }
@@ -491,7 +491,7 @@ input {
 	top: 0;
 	width: 100%;
 	height: 100%;
-	background: url(D:/LSL_Translator/LSL_Translator/docs/images/pattern.png);
+	background: url(images/pattern.png);
 }
 .download ul {
 	list-style: none;
